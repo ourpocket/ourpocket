@@ -1,24 +1,22 @@
-import { useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import CodePreciewBlock from "@/components/layouts/mac-like-codeblock.tsx";
-
 const Hero = () => {
-  const [open, setOpen] = useState(false);
 
   const SHOWDOWNLOAD = (
-    <button
+    
+    <>
+      <button
+
       className="mt-2 bg-[var(--default)] dark:bg-white text-white
       dark:text-black text-sm font-semibold px-5 py-2 rounded-lg
       flex items-center justify-center gap-2 shadow-md hover:scale-[1.02] transition"
-    >
+    data-tally-open="wAg0py" data-tally-emoji-text="👋" data-tally-emoji-animation="wave"
+      >
       <span>Get Started</span>
     </button>
+
+    </>
+
+    
   );
 
   return (
@@ -76,6 +74,9 @@ currency: 'NGN',
 
 `}
       />
+
+
+
     </section>
   );
 };

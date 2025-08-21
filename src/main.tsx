@@ -7,6 +7,7 @@ import { routeTree } from "./routeTree.gen";
 
 import "./styles.css";
 import reportWebVitals from "./reportWebVitals.ts";
+import { Toaster } from "sonner";
 
 // Create a new router instance
 const router = createRouter({
@@ -32,6 +33,10 @@ if (rootElement && !rootElement.innerHTML) {
   root.render(
     <StrictMode>
       <RouterProvider router={router} />
+      <Toaster 
+      position="top-center"
+      closeButton
+      richColors/>
     </StrictMode>,
   );
 }
