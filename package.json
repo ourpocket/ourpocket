@@ -11,7 +11,7 @@
     "format": "biome format",
     "lint": "biome lint",
     "check": "biome check",
-    "format ": "prettier . --write"
+    "format ": "prettier --write ."
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.14",

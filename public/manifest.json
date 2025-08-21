@@ -1,6 +1,17 @@
 {
-  "short_name": "TanStack App",
-  "name": "Create TanStack App Sample",
+  "short_name": "Ourpocket",
+  "name": "Ourpocket – Unified Wallet API",
+  "description": "Stop rebuilding the same wallet integration. Ourpocket provides a single clean API to connect and manage multiple payment wallets with ease.",
+  "categories": ["finance", "business", "development", "API"],
+  "dir": "ltr",
+  "lang": "en",
+  "id": "/",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#1a1a1a",
+  "background_color": "#fb8a2e",
   "icons": [
     {
       "src": "favicon.ico",
@@ -10,16 +21,15 @@
     {
       "src": "logo192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "prefer_related_applications": false
 }
