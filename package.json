@@ -11,9 +11,13 @@
     "format": "biome format",
     "lint": "biome lint",
     "check": "biome check",
-    "format ": "prettier --write ."
+    "format ": "prettier --write .",
+    "prepare": "husky",
+    "precommit": "lint-staged"
   },
   "dependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
     "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-slot": "^1.2.3",
     "@tailwindcss/vite": "^4.0.6",
@@ -23,6 +27,8 @@
     "@types/react-syntax-highlighter": "^15.5.13",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.5",
     "lucide-react": "^0.523.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
