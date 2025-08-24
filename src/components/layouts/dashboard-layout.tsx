@@ -12,7 +12,7 @@ const DashboardLayout = ({ children }: Props) => {
 	const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
 	return (
-		<div className="flex min-h-screen bg-background">
+		<div className="flex min-h-screen ">
 			<DashboardSidebar
 				mainMenuItems={mainMenuItems}
 				accountMenuItems={accountMenuItems}
