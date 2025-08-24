@@ -41,7 +41,11 @@ const Register = () => {
 	};
 
 	return (
-		<AuthLayout>
+		<AuthLayout
+			title="Let's get started"
+			description="Create your account to start managing your finances effectively."
+			isCentered
+		>
 			<div className="flex flex-col space-y-6 w-full max-w-md mx-auto">
 				<Form {...form}>
 					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

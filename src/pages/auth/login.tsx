@@ -45,7 +45,11 @@ const Login = () => {
 	};
 
 	return (
-		<AuthLayout>
+		<AuthLayout
+			title="Log in to your account"
+			description="Welcome back! Please enter your details to access your account."
+			isCentered
+		>
 			<div className="flex flex-col w-full space-y-6">
 				<Form {...form}>
 					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -69,18 +73,7 @@ const Login = () => {
 						/>
 
 						<div className="space-y-2">
-							<div className="flex items-center justify-between">
-								<FormLabel className="text-sm font-medium text-gray-200">Password</FormLabel>
-								<Link
-									to={{
-										to: "/auth/forgot-password",
-										params: {},
-									}}
-									className="text-sm text-[#2563EB] hover:text-[#1D4ED8] font-medium"
-								>
-									Reset Here
-								</Link>
-							</div>
+							<FormLabel className="text-sm font-medium text-gray-200">Password</FormLabel>
 
 							<FormField
 								control={form.control}
