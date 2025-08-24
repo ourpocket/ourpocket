@@ -31,12 +31,12 @@ export const mainMenuItems: SidebarItem[] = [
 		href: "/dashboard/api-key",
 		isActive: <Key size={20} variant={"Bold"} color={"orange"} />,
 	},
-	{
-		icon: <WalletAdd size={20} variant={"Bulk"} />,
-		label: "Wallet",
-		href: "/dashboard/user-wallet",
-		isActive: <WalletAdd size={20} variant={"Bold"} color={"orange"} />,
-	},
+	// {
+	//   icon: <WalletAdd size={20} variant={"Bulk"} />,
+	//   label: "Wallet",
+	//   href: "/dashboard/user-wallet",
+	//   isActive: <WalletAdd size={20} variant={"Bold"} color={"orange"} />,
+	// },
 
 	{
 		icon: <Cloud size={20} variant={"Bulk"} />,

@@ -26,7 +26,7 @@ const DashboardHeader = () => {
 						<div className={"bg-red-500 w-2 h-2 rounded-full mr-2"} />
 						<small>Test Mode</small>
 					</Button>
-					<div>
+					<div className={"p-2 rounded-full bg-gray-600/10"}>
 						<Notification variant="Bulk" />
 					</div>
 
