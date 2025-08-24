@@ -6,37 +6,47 @@
 ## 🎯 The Problem We Solve
 
 Building wallet functionality means:
-- ❌ Integrating with multiple payment providers individually
-- ❌ Managing different API specifications and quirks
-- ❌ Handling provider downtime and failover logic
-- ❌ Weeks of development time for basic wallet features
-- ❌ Maintaining multiple integrations as APIs change
+-  Integrating with multiple payment providers individually
+-  Managing different API specifications and quirks
+-  Handling provider downtime and failover logic
+-  Weeks of development time for basic wallet features
+-  Maintaining multiple integrations as APIs change
 
 ## ✅ The OurPocket Solution
 
 **Integrate once. Access everything.**
 
-- 🔌 **Single Integration**: One API connects you to Flutterwave, Paystack, Monnify, Cellulant, Chipper, and more
-- 🛡️ **Failover & Fallback**: Automatic routing when providers go down
-- 🎨 **Unified Interface**: Standard endpoints for all wallet operations
-- ⚡ **Faster Launches**: Go live in hours, not weeks
-- 🔧 **Provider Abstraction**: API changes? We handle it behind the scenes
+-  **Single Integration**: One API connects you to Flutterwave, Paystack, Monnify, Cellulant, Chipper, and more
+-  **Failover & Fallback**: Automatic routing when providers go down
+-  **Unified Interface**: Standard endpoints for all wallet operations
+-  **Faster Launches**: Go live in hours, not weeks
+-  **Provider Abstraction**: API changes? We handle it behind the scenes
 
 ## 🏗️ Core Features
 
-### Wallet Operations
-- **Wallet Creation**: Instant user wallet provisioning
-- **Funding**: Multiple funding sources and methods
-- **Transfers**: P2P, bulk, and scheduled transfers
-- **Balance Queries**: Real-time balance checking
-- **Transaction History**: Comprehensive transaction logs
+[//]: # (### Wallet Operations)
 
-### Developer Experience
-- **Webhooks & Events**: Real-time notifications
-- **KYC Management**: Unified identity verification
-- **Rate Limiting**: Built-in request management
-- **Comprehensive Docs**: Get started in minutes
-- **SDKs**: Multiple language support
+[//]: # (- **Wallet Creation**: Instant user wallet provisioning)
+
+[//]: # (- **Funding**: Multiple funding sources and methods)
+
+[//]: # (- **Transfers**: P2P, bulk, and scheduled transfers)
+
+[//]: # (- **Balance Queries**: Real-time balance checking)
+
+[//]: # (- **Transaction History**: Comprehensive transaction logs)
+
+[//]: # (### Developer Experience)
+
+[//]: # (- **Webhooks & Events**: Real-time notifications)
+
+[//]: # (- **KYC Management**: Unified identity verification)
+
+[//]: # (- **Rate Limiting**: Built-in request management)
+
+[//]: # (- **Comprehensive Docs**: Get started in minutes)
+
+[//]: # (- **SDKs**: Multiple language support)
 
 ## 🎯 Who This Is For
 
@@ -47,135 +57,90 @@ Building wallet functionality means:
 - **SaaS Platforms** adding financial features
 - **Digital Banks** scaling payment infrastructure
 
-## 🚀 Quick Start
+[//]: # (### Core Endpoints)
 
-### Installation
-```bash
-npm install ourpocket-sdk
-# or
-yarn add ourpocket-sdk
-```
+[//]: # ()
+[//]: # (#### Wallets)
 
-### Basic Usage
-```javascript
-import OurPocket from 'ourpocket-sdk';
+[//]: # (- `POST /wallets` - Create wallet)
 
-const wallet = new OurPocket({
-  apiKey: 'your-api-key',
-  environment: 'sandbox' // or 'production'
-});
+[//]: # (- `GET /wallets/{id}` - Get wallet details)
 
-// Create a wallet
-const newWallet = await wallet.create({
-  userId: 'user-123',
-  currency: 'NGN'
-});
+[//]: # (- `GET /wallets/{id}/balance` - Get wallet balance)
 
-// Fund wallet
-const funding = await wallet.fund({
-  walletId: newWallet.id,
-  amount: 10000,
-  source: 'bank_transfer'
-});
+[//]: # (- `GET /wallets/{id}/transactions` - Get transaction history)
 
-// Transfer funds
-const transfer = await wallet.transfer({
-  from: 'wallet-123',
-  to: 'wallet-456',
-  amount: 5000,
-  description: 'Payment for services'
-});
-```
+[//]: # ()
+[//]: # (#### Transfers)
 
-## 🏃‍♂️ Development Setup
+[//]: # (- `POST /transfers` - Initiate transfer)
 
-### Prerequisites
-- Node.js 18+
-- pnpm (recommended) or npm
+[//]: # (- `GET /transfers/{id}` - Get transfer status)
 
-### Getting Started
-```bash
-# Clone the repository
-git clone https://github.com/yourorg/ourpocket.git
-cd ourpocket
+[//]: # (- `POST /transfers/bulk` - Bulk transfers)
 
-# Install dependencies
-pnpm install
+[//]: # ()
+[//]: # (#### Funding)
 
-# Start development server
-pnpm dev
+[//]: # (- `POST /funding/bank-transfer` - Fund via bank transfer)
 
-# Run tests
-pnpm test
+[//]: # (- `POST /funding/card` - Fund via card)
 
-# Build for production
-pnpm build
-```
+[//]: # (- `POST /funding/ussd` - Fund via USSD)
 
-## 📚 API Documentation
+[//]: # ()
+[//]: # (## 🔧 Supported Providers)
 
-### Base URL
-```
-Sandbox: https://sandbox-api.ourpocket.dev
-Production: https://api.ourpocket.dev
-```
+[//]: # ()
+[//]: # (- **Flutterwave** - Cards, Bank Transfers, Mobile Money)
 
-### Authentication
-All requests require an API key in the header:
-```
-Authorization: Bearer your-api-key
-```
+[//]: # (- **Paystack** - Cards, Bank Transfers, USSD)
 
-### Core Endpoints
+[//]: # (- **Cellulant** - Mobile Money, Bank Transfers)
 
-#### Wallets
-- `POST /wallets` - Create wallet
-- `GET /wallets/{id}` - Get wallet details
-- `GET /wallets/{id}/balance` - Get wallet balance
-- `GET /wallets/{id}/transactions` - Get transaction history
+[//]: # (- **Chipper Cash** - P2P Transfers)
 
-#### Transfers
-- `POST /transfers` - Initiate transfer
-- `GET /transfers/{id}` - Get transfer status
-- `POST /transfers/bulk` - Bulk transfers
+[//]: # (- *More providers added regularly*)
 
-#### Funding
-- `POST /funding/bank-transfer` - Fund via bank transfer
-- `POST /funding/card` - Fund via card
-- `POST /funding/ussd` - Fund via USSD
+[//]: # (## 🛡️ Security & Compliance)
 
-## 🔧 Supported Providers
+[//]: # ()
+[//]: # (- **PCI DSS Compliant** infrastructure)
 
-- **Flutterwave** - Cards, Bank Transfers, Mobile Money
-- **Paystack** - Cards, Bank Transfers, USSD
-- **Monnify** - Bank Transfers, Cards
-- **Cellulant** - Mobile Money, Bank Transfers
-- **Chipper Cash** - P2P Transfers
-- *More providers added regularly*
+[//]: # (- **End-to-end encryption** for sensitive data)
 
-## 🛡️ Security & Compliance
+[//]: # (- **Webhook signature verification**)
 
-- **PCI DSS Compliant** infrastructure
-- **End-to-end encryption** for sensitive data
-- **Webhook signature verification**
-- **Rate limiting** and DDoS protection
-- **Audit logs** for all transactions
+[//]: # (- **Rate limiting** and DDoS protection)
 
-## 🤝 Contributing
+[//]: # (- **Audit logs** for all transactions)
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+[//]: # ()
+[//]: # (## 🤝 Contributing)
 
-## 📄 License
+[//]: # ()
+[//]: # (We welcome contributions! Please see our [Contributing Guide]&#40;CONTRIBUTING.md&#41; for details.)
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+[//]: # ()
+[//]: # (## 📄 License)
 
-## 🆘 Support
+[//]: # ()
+[//]: # (This project is licensed under the MIT License - see the [LICENSE]&#40;LICENSE&#41; file for details.)
 
-- 📧 Email: support@ourpocket.dev
-- 💬 Discord: [Join our community](https://discord.gg/ourpocket)
-- 📖 Docs: [docs.ourpocket.dev](https://docs.ourpocket.dev)
-- 🐛 Issues: [GitHub Issues](https://github.com/yourorg/ourpocket/issues)
+[//]: # ()
+[//]: # (## 🆘 Support)
 
----
+[//]: # ()
+[//]: # (- 📧 Email: support@ourpocket.dev)
 
-**Ready to simplify your wallet integrations?** [Get your API key](https://dashboard.ourpocket.dev) and start building in minutes.
+[//]: # (- 💬 Discord: [Join our community]&#40;https://discord.gg/ourpocket&#41;)
+
+[//]: # (- 📖 Docs: [docs.ourpocket.dev]&#40;https://docs.ourpocket.dev&#41;)
+
+[//]: # (- 🐛 Issues: [GitHub Issues]&#40;https://github.com/yourorg/ourpocket/issues&#41;)
+
+[//]: # ()
+[//]: # (---)
+
+[//]: # ()
+[//]: # (**Ready to simplify your wallet integrations?** [Get your API key]&#40;https://dashboard.ourpocket.dev&#41; and start building in minutes.)
