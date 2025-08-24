@@ -7,6 +7,7 @@ import { ArrowDown2, Menu } from "iconsax-reactjs";
 import { type ReactNode, useState } from "react";
 
 interface SidebarItem {
+	isActive: React.ReactNode | undefined;
 	icon?: ReactNode;
 	label: string;
 	href?: string;
@@ -31,9 +32,9 @@ interface DashboardSidebarProps {
 
 const SidebarSection = ({ title, items }: SidebarSectionProps) => (
 	<div>
-		<h3 className="mb-3 px-4 text-xs font-medium uppercase tracking-wider text-white/50">
-			{title}
-		</h3>
+		{/*<h3 className="mb-3 px-4 text-xs font-medium uppercase tracking-wider text-white/50">*/}
+		{/*	{title}*/}
+		{/*</h3>*/}
 		<nav className="space-y-1.5">
 			{items.map((item, index) => (
 				<SidebarItemComponent key={item.href || index} item={item} />
@@ -68,7 +69,7 @@ const SidebarItemLink = ({
 			className={cn(sidebarItemStyles.base, className, isActive && "active")}
 		>
 			<div className={cn("flex items-center", isActive && "active_icon")}>{icon}</div>
-			{label}
+			<p className={`${isActive && ""}`}>{label}</p>
 		</Link>
 	);
 };
@@ -123,7 +124,7 @@ const SidebarItemComponent = ({ item }: { item: SidebarItem }) => {
 		<SidebarItemLink
 			href={item.href!}
 			label={item.label}
-			icon={item.icon}
+			icon={isActive ? item.isActive : item.icon}
 			className={sidebarItemStyles.main}
 		/>
 	);
@@ -132,7 +133,7 @@ const SidebarItemComponent = ({ item }: { item: SidebarItem }) => {
 const sidebarStyles = {
 	toggleButton: "fixed left-4 top-4 z-50 lg:hidden",
 	aside:
-		"fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r bg-background transition-transform duration-200 ease-in-out lg:static",
+		"fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r bg-[var(--dark-evening)] transition-transform duration-200 ease-in-out lg:static",
 	header: "flex h-16 items-center justify-between border-b px-6",
 	content: "flex flex-1 flex-col",
 	sections: "flex-1 space-y-6 overflow-y-auto p-6",

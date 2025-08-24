@@ -1,4 +1,13 @@
-import { CardSend, Chart21, Cloud, Code, DocumentText, Home, Key } from "iconsax-reactjs";
+import {
+	CardSend,
+	Chart21,
+	Cloud,
+	Code,
+	DocumentText,
+	Home,
+	Key,
+	WalletAdd,
+} from "iconsax-reactjs";
 import { type ReactNode } from "react";
 
 export interface SidebarItem {
@@ -6,38 +15,51 @@ export interface SidebarItem {
 	label: string;
 	href?: string;
 	subItems?: Omit<SidebarItem, "icon" | "subItems">[];
+	isActive?: ReactNode;
 }
 
 export const mainMenuItems: SidebarItem[] = [
 	{
-		icon: <Home size={20} />,
+		icon: <Home size={20} variant={"Bold"} />,
 		label: "Overview",
 		href: "/dashboard",
+		isActive: <Home size={20} variant={"Bold"} color={"orange"} />,
 	},
 	{
-		icon: <Key size={20} />,
+		icon: <Key size={20} variant={"Bulk"} />,
 		label: "API Keys",
 		href: "/api-keys",
+		isActive: <Key size={20} variant={"Bold"} color={"orange"} />,
 	},
 	{
-		icon: <CardSend size={20} />,
+		icon: <WalletAdd size={20} variant={"Bulk"} />,
+		label: "Wallet",
+		href: "/user-wallet",
+		isActive: <WalletAdd size={20} variant={"Bold"} color={"orange"} />,
+	},
+	{
+		icon: <CardSend size={20} variant={"Bulk"} />,
 		label: "Transactions",
 		href: "/transactions",
+		isActive: <CardSend size={20} variant={"Bold"} color={"orange"} />,
 	},
 	{
-		icon: <Cloud size={20} />,
+		icon: <Cloud size={20} variant={"Bulk"} />,
 		label: "Providers",
 		href: "/providers",
+		isActive: <Cloud size={20} variant={"Bold"} color={"orange"} />,
 	},
 	{
-		icon: <DocumentText size={20} />,
+		icon: <DocumentText size={20} variant={"Bulk"} />,
 		label: "Reconciliation",
 		href: "/reconciliation",
+		isActive: <DocumentText size={20} variant={"Bold"} color={"orange"} />,
 	},
 	{
-		icon: <Code size={20} />,
+		icon: <Code size={20} variant={"Bulk"} />,
 		label: "Webhooks",
 		href: "/webhooks",
+		isActive: <Code size={20} variant={"Bold"} color={"orange"} />,
 	},
 ];
 
