@@ -138,10 +138,10 @@ export default function DashboardOverview() {
 								<Line
 									type="monotone"
 									dataKey="requests"
-									stroke="#059669"
+									stroke="orange"
 									strokeWidth={3}
-									dot={{ fill: "#059669", strokeWidth: 2, r: 4 }}
-									activeDot={{ r: 6, fill: "#059669" }}
+									dot={{ fill: "orange", strokeWidth: 2, r: 4 }}
+									activeDot={{ r: 6, fill: "orange" }}
 								/>
 							</LineChart>
 						</ResponsiveContainer>
