@@ -28,39 +28,40 @@ export const mainMenuItems: SidebarItem[] = [
 	{
 		icon: <Key size={20} variant={"Bulk"} />,
 		label: "API Keys",
-		href: "/api-keys",
+		href: "/dashboard/api-key",
 		isActive: <Key size={20} variant={"Bold"} color={"orange"} />,
 	},
 	{
 		icon: <WalletAdd size={20} variant={"Bulk"} />,
 		label: "Wallet",
-		href: "/user-wallet",
+		href: "/dashboard/user-wallet",
 		isActive: <WalletAdd size={20} variant={"Bold"} color={"orange"} />,
 	},
-	{
-		icon: <CardSend size={20} variant={"Bulk"} />,
-		label: "Transactions",
-		href: "/transactions",
-		isActive: <CardSend size={20} variant={"Bold"} color={"orange"} />,
-	},
+
 	{
 		icon: <Cloud size={20} variant={"Bulk"} />,
 		label: "Providers",
-		href: "/providers",
+		href: "/dashboard/wallet-providers",
 		isActive: <Cloud size={20} variant={"Bold"} color={"orange"} />,
-	},
-	{
-		icon: <DocumentText size={20} variant={"Bulk"} />,
-		label: "Reconciliation",
-		href: "/reconciliation",
-		isActive: <DocumentText size={20} variant={"Bold"} color={"orange"} />,
 	},
 	{
 		icon: <Code size={20} variant={"Bulk"} />,
 		label: "Webhooks",
-		href: "/webhooks",
+		href: "/dashboard/webhooks",
 		isActive: <Code size={20} variant={"Bold"} color={"orange"} />,
 	},
+	// {
+	//   icon: <CardSend size={20} variant={"Bulk"} />,
+	//   label: "Transactions",
+	//   href: "/dashboard/transactions",
+	//   isActive: <CardSend size={20} variant={"Bold"} color={"orange"} />,
+	// },
+	// {
+	//   icon: <DocumentText size={20} variant={"Bulk"} />,
+	//   label: "Reconciliation",
+	//   href: "/reconciliation",
+	//   isActive: <DocumentText size={20} variant={"Bold"} color={"orange"} />,
+	// },
 ];
 
 export const accountMenuItems: SidebarItem[] = [];

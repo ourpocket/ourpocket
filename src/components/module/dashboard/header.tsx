@@ -5,6 +5,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu.tsx";
+import Avatar from "boring-avatars";
 import { ArrowDown2, Notification } from "iconsax-reactjs";
 
 const DashboardHeader = () => {
@@ -32,12 +33,7 @@ const DashboardHeader = () => {
 					<DropdownMenu>
 						<DropdownMenuTrigger>
 							<div className="flex items-center  gap-2 cursor-pointer">
-								<img
-									width={35}
-									className={"rounded-full"}
-									src="https://api.dicebear.com/9.x/bottts-neutral/svg?seed=Chase"
-									alt="avatar"
-								/>
+								<Avatar name={"Emmanuel Obiabo"} size={30} />
 
 								<ArrowDown2 color={"white"} size={14} />
 							</div>
