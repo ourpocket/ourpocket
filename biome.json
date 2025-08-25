@@ -1,65 +1,65 @@
 {
-	"$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
-	"vcs": {
-		"enabled": false,
-		"clientKind": "git",
-		"useIgnoreFile": false
-	},
-	"files": {
-		"ignoreUnknown": false,
-		"ignore": ["src/routeTree.gen.ts"],
-		"include": ["src/*", ".vscode/*", "index.html", "vite.config.js"]
-	},
-	"formatter": {
-		"enabled": true,
-		"indentStyle": "tab",
-		"lineWidth": 100,
-		"formatWithErrors": false,
-		"indentWidth": 2,
-		"ignore": [".git", "node_modules", "dist"],
-		"bracketSpacing": true
-	},
-	"organizeImports": {
-		"enabled": true
-	},
-	"linter": {
-		"enabled": true,
-		"ignore": [".git", "node_modules", "dist"],
-		"rules": {
-			"recommended": false,
-			"correctness": {
-				"recommended": false
-			},
-			"suspicious": {
-				"recommended": false,
-				"noRedundantUseStrict": "off"
-			},
-			"complexity": {
-				"recommended": false
-			},
-			"style": {
-				"recommended": false
-			},
-			"a11y": {
-				"recommended": false
-			}
-		}
-	},
-	"javascript": {
-		"formatter": {
-			"quoteStyle": "double",
-			"trailingCommas": "all",
-			"semicolons": "always",
-			"arrowParentheses": "always",
-			"jsxQuoteStyle": "double"
-		},
-		"parser": {
-			"unsafeParameterDecoratorsEnabled": false
-		}
-	},
-	"json": {
-		"parser": {
-			"allowComments": true
-		}
-	}
+  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+  "vcs": {
+    "enabled": false,
+    "clientKind": "git",
+    "useIgnoreFile": false
+  },
+  "files": {
+    "ignoreUnknown": false,
+    "ignore": ["src/routeTree.gen.ts"],
+    "include": ["src/*", ".vscode/*", "index.html", "vite.config.js"]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "tab",
+    "lineWidth": 100,
+    "formatWithErrors": false,
+    "indentWidth": 2,
+    "ignore": [".git", "node_modules", "dist"],
+    "bracketSpacing": true
+  },
+  "organizeImports": {
+    "enabled": true
+  },
+  "linter": {
+    "enabled": true,
+    "ignore": [".git", "node_modules", "dist"],
+    "rules": {
+      "recommended": false,
+      "correctness": {
+        "recommended": false
+      },
+      "suspicious": {
+        "recommended": false,
+        "noRedundantUseStrict": "off"
+      },
+      "complexity": {
+        "recommended": false
+      },
+      "style": {
+        "recommended": false
+      },
+      "a11y": {
+        "recommended": false
+      }
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double",
+      "trailingCommas": "all",
+      "semicolons": "always",
+      "arrowParentheses": "always",
+      "jsxQuoteStyle": "double"
+    },
+    "parser": {
+      "unsafeParameterDecoratorsEnabled": false
+    }
+  },
+  "json": {
+    "parser": {
+      "allowComments": true
+    }
+  }
 }

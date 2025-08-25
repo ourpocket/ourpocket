@@ -7,7 +7,15 @@ const Header = () => {
 				<LogoText />
 			</div>
 
-			<div />
+			<div>
+				<a href="https://github.com/ourpocket/ourpocket" target="_blank" rel="noopener noreferrer">
+					<img
+						alt="GitHub Stars"
+						width={80}
+						src="https://img.shields.io/github/stars/ourpocket/ourpocket?style=social"
+					/>
+				</a>
+			</div>
 		</div>
 	);
 };
