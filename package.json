@@ -18,6 +18,7 @@
     "check": "biome check",
     "prepare": "husky",
     "precommit": "lint-staged"
+  ,"postinstall": "git submodule update --init --recursive"
   },
   "dependencies": {
     "@commitlint/cli": "^19.8.1",
