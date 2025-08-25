@@ -61,7 +61,7 @@ const SidebarItemLink = ({
 	className?: string;
 }) => {
 	const matchRoute = useMatchRoute();
-	const isActive = matchRoute({ to: href });
+	const isActive = matchRoute({ to: href, strict: true });
 	return (
 		<Link
 			to={href}
