@@ -45,8 +45,9 @@ const SidebarSection = ({ title, items }: SidebarSectionProps) => (
 
 const sidebarItemStyles = {
 	base: "flex items-center gap-x-3 rounded-lg text-sm font-medium transition-colors duration-200 ease-in-out text-white",
-	main: "px-4 py-2.5 hover:bg-sidebar-accent/10 [&.active]:bg-sidebar-accent/10 [&.active_icon]:font-bold",
+	main: "px-4 py-2.5 hover:bg-sidebar-accent/10 ",
 	sub: "px-6 py-2 text-white/70 hover:bg-sidebar-accent/10 [&.active]:bg-sidebar-accent/10 [&.active]:text-white",
+	active: "[&.active]:bg-sidebar-accent/10 [&.active_icon]:font-bold",
 };
 
 const SidebarItemLink = ({
@@ -61,13 +62,9 @@ const SidebarItemLink = ({
 	className?: string;
 }) => {
 	const matchRoute = useMatchRoute();
-	const isActive = matchRoute({ to: href, strict: true });
+	const isActive = matchRoute({ to: href });
 	return (
-		<Link
-			to={href}
-			preload="intent"
-			className={cn(sidebarItemStyles.base, className, isActive && "active")}
-		>
+		<Link to={href} preload="intent" className={cn(sidebarItemStyles.base, className)}>
 			<div className={cn("flex items-center", isActive && "active_icon")}>{icon}</div>
 			<p className={`${isActive && ""}`}>{label}</p>
 		</Link>
@@ -106,6 +103,7 @@ const SidebarItemComponent = ({ item }: { item: SidebarItem }) => {
 						/>
 					</Button>
 				</CollapsibleTrigger>
+
 				<CollapsibleContent className="space-y-1 px-2 py-1.5">
 					{item.subItems.map((subItem) => (
 						<SidebarItemLink
@@ -125,7 +123,7 @@ const SidebarItemComponent = ({ item }: { item: SidebarItem }) => {
 			href={item.href!}
 			label={item.label}
 			icon={isActive ? item.isActive : item.icon}
-			className={sidebarItemStyles.main}
+			className={sidebarItemStyles.main + (isActive ? sidebarItemStyles.active : "")}
 		/>
 	);
 };
