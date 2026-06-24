@@ -12,14 +12,9 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table.tsx";
-import {
-	type WebhookEndpoint,
-	WebhookEvent,
-	createWebhook,
-	deleteWebhook,
-	listWebhooks,
-} from "@/lib/api";
-import { useCurrentProject } from "@/lib/hooks/use-current-project";
+import { useCurrentProject } from "@/hooks/use-current-project";
+import { useWebhooks } from "@/hooks/use-webhooks";
+import { type WebhookEndpoint, WebhookEvent } from "@/services/types";
 import { Copy, Eye, EyeSlash, Trash } from "iconsax-reactjs";
 import { ExternalLink } from "lucide-react";
 import moment from "moment";
@@ -33,6 +28,7 @@ interface AddEndpointProps {
 }
 
 const AddEndpoint = ({ projectId, onCreated }: AddEndpointProps) => {
+	const { createWebhook } = useWebhooks();
 	const [url, setUrl] = useState("");
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -130,6 +126,7 @@ const WebhookUrlCard = ({ url }: { url: string }) => {
 
 const WebhooksPage = () => {
 	const { project, isLoading } = useCurrentProject();
+	const { deleteWebhook, listWebhooks } = useWebhooks();
 	const [webhooks, setWebhooks] = useState<WebhookEndpoint[]>([]);
 	const unifiedWebhookUrl = `${import.meta.env.VITE_API_PUBLIC_URL || "http://localhost:3000"}/ourpocket/webhook`;
 

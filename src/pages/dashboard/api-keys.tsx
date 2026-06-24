@@ -3,13 +3,9 @@ import { ModularCard } from "@/components/module/card";
 import { GenerateApiKeyModal } from "@/components/module/dashboard/api-key/generate-api-key.tsx";
 import ModularModals from "@/components/module/popovers/modular-modals.tsx";
 import { Button } from "@/components/ui/button.tsx";
-import {
-	type ProjectApiKey,
-	ProjectApiKeyScope,
-	ensureDefaultApiKeys,
-	revokeProjectApiKey,
-} from "@/lib/api";
-import { useCurrentProject } from "@/lib/hooks/use-current-project";
+import { useApiKeys } from "@/hooks/use-api-keys";
+import { useCurrentProject } from "@/hooks/use-current-project";
+import { type ProjectApiKey, ProjectApiKeyScope } from "@/services/types";
 import { Copy, Eye, EyeSlash, Trash } from "iconsax-reactjs";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -102,6 +98,7 @@ const ApiKeyCard = ({
 
 const ApiKeysPage = () => {
 	const { project, isLoading } = useCurrentProject();
+	const { ensureDefaultApiKeys, revokeProjectApiKey } = useApiKeys();
 	const [apiKeys, setApiKeys] = useState<ProjectApiKey[]>([]);
 
 	useEffect(() => {

@@ -9,7 +9,7 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { resetPassword } from "@/lib/api";
+import { useAuth } from "@/hooks/use-auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
@@ -32,6 +32,7 @@ type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
 
 const ResetPassword = () => {
 	const navigate = useNavigate();
+	const { resetPassword } = useAuth();
 	const form = useForm<ResetPasswordFormValues>({
 		defaultValues: {
 			email: "",

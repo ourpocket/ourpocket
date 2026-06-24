@@ -13,8 +13,12 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as OnboardingWelcomeRouteImport } from './routes/onboarding/welcome'
 import { Route as DashboardWebhooksRouteImport } from './routes/dashboard/webhooks'
+import { Route as DashboardWalletsRouteImport } from './routes/dashboard/wallets'
 import { Route as DashboardWalletProvidersRouteImport } from './routes/dashboard/wallet-providers'
+import { Route as DashboardTransactionsRouteImport } from './routes/dashboard/transactions'
+import { Route as DashboardProjectsRouteImport } from './routes/dashboard/projects'
 import { Route as DashboardApiKeyRouteImport } from './routes/dashboard/api-key'
+import { Route as AuthVerifyEmailRouteImport } from './routes/auth/verify-email'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
 import { Route as AuthRegisterRouteImport } from './routes/auth/register'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
@@ -40,15 +44,35 @@ const DashboardWebhooksRoute = DashboardWebhooksRouteImport.update({
   path: '/dashboard/webhooks',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardWalletsRoute = DashboardWalletsRouteImport.update({
+  id: '/dashboard/wallets',
+  path: '/dashboard/wallets',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardWalletProvidersRoute =
   DashboardWalletProvidersRouteImport.update({
     id: '/dashboard/wallet-providers',
     path: '/dashboard/wallet-providers',
     getParentRoute: () => rootRouteImport,
   } as any)
+const DashboardTransactionsRoute = DashboardTransactionsRouteImport.update({
+  id: '/dashboard/transactions',
+  path: '/dashboard/transactions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardProjectsRoute = DashboardProjectsRouteImport.update({
+  id: '/dashboard/projects',
+  path: '/dashboard/projects',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardApiKeyRoute = DashboardApiKeyRouteImport.update({
   id: '/dashboard/api-key',
   path: '/dashboard/api-key',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthVerifyEmailRoute = AuthVerifyEmailRouteImport.update({
+  id: '/auth/verify-email',
+  path: '/auth/verify-email',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
@@ -78,8 +102,12 @@ export interface FileRoutesByFullPath {
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/auth/verify-email': typeof AuthVerifyEmailRoute
   '/dashboard/api-key': typeof DashboardApiKeyRoute
+  '/dashboard/projects': typeof DashboardProjectsRoute
+  '/dashboard/transactions': typeof DashboardTransactionsRoute
   '/dashboard/wallet-providers': typeof DashboardWalletProvidersRoute
+  '/dashboard/wallets': typeof DashboardWalletsRoute
   '/dashboard/webhooks': typeof DashboardWebhooksRoute
   '/onboarding/welcome': typeof OnboardingWelcomeRoute
   '/dashboard': typeof DashboardIndexRoute
@@ -90,8 +118,12 @@ export interface FileRoutesByTo {
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/auth/verify-email': typeof AuthVerifyEmailRoute
   '/dashboard/api-key': typeof DashboardApiKeyRoute
+  '/dashboard/projects': typeof DashboardProjectsRoute
+  '/dashboard/transactions': typeof DashboardTransactionsRoute
   '/dashboard/wallet-providers': typeof DashboardWalletProvidersRoute
+  '/dashboard/wallets': typeof DashboardWalletsRoute
   '/dashboard/webhooks': typeof DashboardWebhooksRoute
   '/onboarding/welcome': typeof OnboardingWelcomeRoute
   '/dashboard': typeof DashboardIndexRoute
@@ -103,8 +135,12 @@ export interface FileRoutesById {
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/auth/verify-email': typeof AuthVerifyEmailRoute
   '/dashboard/api-key': typeof DashboardApiKeyRoute
+  '/dashboard/projects': typeof DashboardProjectsRoute
+  '/dashboard/transactions': typeof DashboardTransactionsRoute
   '/dashboard/wallet-providers': typeof DashboardWalletProvidersRoute
+  '/dashboard/wallets': typeof DashboardWalletsRoute
   '/dashboard/webhooks': typeof DashboardWebhooksRoute
   '/onboarding/welcome': typeof OnboardingWelcomeRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -117,8 +153,12 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/register'
     | '/auth/reset-password'
+    | '/auth/verify-email'
     | '/dashboard/api-key'
+    | '/dashboard/projects'
+    | '/dashboard/transactions'
     | '/dashboard/wallet-providers'
+    | '/dashboard/wallets'
     | '/dashboard/webhooks'
     | '/onboarding/welcome'
     | '/dashboard'
@@ -129,8 +169,12 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/register'
     | '/auth/reset-password'
+    | '/auth/verify-email'
     | '/dashboard/api-key'
+    | '/dashboard/projects'
+    | '/dashboard/transactions'
     | '/dashboard/wallet-providers'
+    | '/dashboard/wallets'
     | '/dashboard/webhooks'
     | '/onboarding/welcome'
     | '/dashboard'
@@ -141,8 +185,12 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/register'
     | '/auth/reset-password'
+    | '/auth/verify-email'
     | '/dashboard/api-key'
+    | '/dashboard/projects'
+    | '/dashboard/transactions'
     | '/dashboard/wallet-providers'
+    | '/dashboard/wallets'
     | '/dashboard/webhooks'
     | '/onboarding/welcome'
     | '/dashboard/'
@@ -154,8 +202,12 @@ export interface RootRouteChildren {
   AuthLoginRoute: typeof AuthLoginRoute
   AuthRegisterRoute: typeof AuthRegisterRoute
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
+  AuthVerifyEmailRoute: typeof AuthVerifyEmailRoute
   DashboardApiKeyRoute: typeof DashboardApiKeyRoute
+  DashboardProjectsRoute: typeof DashboardProjectsRoute
+  DashboardTransactionsRoute: typeof DashboardTransactionsRoute
   DashboardWalletProvidersRoute: typeof DashboardWalletProvidersRoute
+  DashboardWalletsRoute: typeof DashboardWalletsRoute
   DashboardWebhooksRoute: typeof DashboardWebhooksRoute
   OnboardingWelcomeRoute: typeof OnboardingWelcomeRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
@@ -191,6 +243,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardWebhooksRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/wallets': {
+      id: '/dashboard/wallets'
+      path: '/dashboard/wallets'
+      fullPath: '/dashboard/wallets'
+      preLoaderRoute: typeof DashboardWalletsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard/wallet-providers': {
       id: '/dashboard/wallet-providers'
       path: '/dashboard/wallet-providers'
@@ -198,11 +257,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardWalletProvidersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/transactions': {
+      id: '/dashboard/transactions'
+      path: '/dashboard/transactions'
+      fullPath: '/dashboard/transactions'
+      preLoaderRoute: typeof DashboardTransactionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/projects': {
+      id: '/dashboard/projects'
+      path: '/dashboard/projects'
+      fullPath: '/dashboard/projects'
+      preLoaderRoute: typeof DashboardProjectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard/api-key': {
       id: '/dashboard/api-key'
       path: '/dashboard/api-key'
       fullPath: '/dashboard/api-key'
       preLoaderRoute: typeof DashboardApiKeyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/verify-email': {
+      id: '/auth/verify-email'
+      path: '/auth/verify-email'
+      fullPath: '/auth/verify-email'
+      preLoaderRoute: typeof AuthVerifyEmailRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/reset-password': {
@@ -242,8 +322,12 @@ const rootRouteChildren: RootRouteChildren = {
   AuthLoginRoute: AuthLoginRoute,
   AuthRegisterRoute: AuthRegisterRoute,
   AuthResetPasswordRoute: AuthResetPasswordRoute,
+  AuthVerifyEmailRoute: AuthVerifyEmailRoute,
   DashboardApiKeyRoute: DashboardApiKeyRoute,
+  DashboardProjectsRoute: DashboardProjectsRoute,
+  DashboardTransactionsRoute: DashboardTransactionsRoute,
   DashboardWalletProvidersRoute: DashboardWalletProvidersRoute,
+  DashboardWalletsRoute: DashboardWalletsRoute,
   DashboardWebhooksRoute: DashboardWebhooksRoute,
   OnboardingWelcomeRoute: OnboardingWelcomeRoute,
   DashboardIndexRoute: DashboardIndexRoute,

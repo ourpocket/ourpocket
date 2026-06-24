@@ -24,14 +24,14 @@ function toErrorWithMessage(maybeError: unknown): ErrorWithMessage {
 	}
 }
 
-export function getErrorMessage(error: unknown) {
+function getErrorMessage(error: unknown) {
 	return toErrorWithMessage(error).message;
 }
 
-export function useErrorHandler() {
+function useErrorHandler() {
 	return useCallback((error: unknown) => {
-		const message = getErrorMessage(error);
-		toast.error(message);
-		console.error(error);
+		toast.error(getErrorMessage(error));
 	}, []);
 }
+
+export { getErrorMessage, useErrorHandler };

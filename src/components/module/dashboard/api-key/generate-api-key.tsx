@@ -15,8 +15,9 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select.tsx";
-import { type ProjectApiKey, ProjectApiKeyScope, createProjectApiKey } from "@/lib/api";
+import { useApiKeys } from "@/hooks/use-api-keys";
 import { createApiKey } from "@/schemas/misc.ts";
+import { type ProjectApiKey, ProjectApiKeyScope } from "@/services/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -30,6 +31,7 @@ interface GenerateApiKeyModalProps {
 }
 
 const GenerateApiKeyModal = ({ projectId, onGenerated }: GenerateApiKeyModalProps) => {
+	const { createProjectApiKey, isLoading } = useApiKeys();
 	const form = useForm<GenerateApiKeyFormValues>({
 		defaultValues: {
 			name: "",
@@ -95,8 +97,12 @@ const GenerateApiKeyModal = ({ projectId, onGenerated }: GenerateApiKeyModalProp
 					)}
 				/>
 
-				<Button type="submit" className={"w-full"} disabled={form.formState.isSubmitting}>
-					{form.formState.isSubmitting ? "Generating..." : "Generate Key"}
+				<Button
+					type="submit"
+					className={"w-full"}
+					disabled={form.formState.isSubmitting || isLoading}
+				>
+					{form.formState.isSubmitting || isLoading ? "Generating..." : "Generate Key"}
 				</Button>
 			</form>
 		</Form>

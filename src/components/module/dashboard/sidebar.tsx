@@ -7,7 +7,7 @@ import { ArrowDown2, Menu } from "iconsax-reactjs";
 import { type ReactNode, useState } from "react";
 
 interface SidebarItem {
-	isActive: React.ReactNode | undefined;
+	isActive?: ReactNode;
 	icon?: ReactNode;
 	label: string;
 	href?: string;
@@ -18,7 +18,6 @@ interface SidebarItem {
 }
 
 interface SidebarSectionProps {
-	title: string;
 	items: SidebarItem[];
 }
 
@@ -30,11 +29,8 @@ interface DashboardSidebarProps {
 	setIsSidebarOpen: (isOpen: boolean) => void;
 }
 
-const SidebarSection = ({ title, items }: SidebarSectionProps) => (
+const SidebarSection = ({ items }: SidebarSectionProps) => (
 	<div>
-		{/*<h3 className="mb-3 px-4 text-xs font-medium uppercase tracking-wider text-white/50">*/}
-		{/*	{title}*/}
-		{/*</h3>*/}
 		<nav className="space-y-1.5">
 			{items.map((item, index) => (
 				<SidebarItemComponent key={item.href || index} item={item} />
@@ -122,7 +118,7 @@ const SidebarItemComponent = ({ item }: { item: SidebarItem }) => {
 		<SidebarItemLink
 			href={item.href!}
 			label={item.label}
-			icon={isActive ? item.isActive : item.icon}
+			icon={isActive ? (item.isActive ?? item.icon) : item.icon}
 			className={sidebarItemStyles.main + (isActive ? sidebarItemStyles.active : "")}
 		/>
 	);
@@ -173,7 +169,7 @@ const DashboardSidebar = ({
 						{sections
 							.filter((section) => section.items.length > 0)
 							.map((section) => (
-								<SidebarSection key={section.title} title={section.title} items={section.items} />
+								<SidebarSection key={section.title} items={section.items} />
 							))}
 					</div>
 				</div>

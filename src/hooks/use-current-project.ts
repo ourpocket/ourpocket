@@ -1,11 +1,13 @@
-import { type Project, ensureDefaultProject } from "@/lib/api";
+import { useErrorHandler } from "@/hooks/use-error-handler";
 import { getAuthToken } from "@/lib/session";
+import { ensureDefaultProject } from "@/services/project.service";
+import type { Project } from "@/services/types";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 
 function useCurrentProject() {
 	const navigate = useNavigate();
+	const handleError = useErrorHandler();
 	const [project, setProject] = useState<Project | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 
@@ -24,8 +26,7 @@ function useCurrentProject() {
 					setProject(currentProject);
 				}
 			} catch (error) {
-				const message = error instanceof Error ? error.message : "Could not load project";
-				toast.error(message);
+				handleError(error);
 			} finally {
 				if (isMounted) {
 					setIsLoading(false);
@@ -38,7 +39,7 @@ function useCurrentProject() {
 		return () => {
 			isMounted = false;
 		};
-	}, [navigate]);
+	}, [handleError, navigate]);
 
 	return {
 		project,

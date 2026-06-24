@@ -1,7 +1,8 @@
 "use client";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { type UsageMetrics, getUsageMetrics } from "@/lib/api";
-import { useCurrentProject } from "@/lib/hooks/use-current-project";
+import { useCurrentProject } from "@/hooks/use-current-project";
+import { useUsageMetrics } from "@/hooks/use-usage-metrics";
+import type { UsageMetrics } from "@/services/types";
 import { Activity, DollarCircle, UserOctagon, Wallet } from "iconsax-reactjs";
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
@@ -80,6 +81,7 @@ const formatNumber = (value: number) =>
 
 export default function DashboardOverview() {
 	const { project, isLoading } = useCurrentProject();
+	const { getUsageMetrics } = useUsageMetrics();
 	const [metrics, setMetrics] = useState<UsageMetrics>(emptyMetrics);
 
 	useEffect(() => {

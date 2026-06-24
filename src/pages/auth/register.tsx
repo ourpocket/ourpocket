@@ -10,7 +10,7 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { register as registerAccount } from "@/lib/api";
+import { useAuth } from "@/hooks/use-auth";
 import { registerSchema } from "@/schemas/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useNavigate } from "@tanstack/react-router";
@@ -22,6 +22,7 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 const Register = () => {
 	const navigate = useNavigate();
+	const { register } = useAuth();
 	const form = useForm<RegisterFormValues>({
 		defaultValues: {
 			fullName: "",
@@ -37,7 +38,7 @@ const Register = () => {
 
 	const onSubmit = async (data: RegisterFormValues) => {
 		try {
-			await registerAccount({
+			await register({
 				name: data.fullName,
 				email: data.email,
 				password: data.password,

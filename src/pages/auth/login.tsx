@@ -9,7 +9,8 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { ensureDefaultProject, login } from "@/lib/api";
+import { useAuth } from "@/hooks/use-auth";
+import { useProjects } from "@/hooks/use-projects";
 import { setAuthToken } from "@/lib/session";
 import { loginSchema } from "@/schemas/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,6 +23,8 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 const Login = () => {
 	const navigate = useNavigate();
+	const { login } = useAuth();
+	const { ensureDefaultProject } = useProjects();
 	const form = useForm<LoginFormValues>({
 		defaultValues: {
 			email: "",
@@ -99,6 +102,9 @@ const Login = () => {
 						<div className="flex justify-center gap-3 text-sm">
 							<Link to="/auth/forgot-password" className="text-muted-foreground hover:text-primary">
 								Forgot password?
+							</Link>
+							<Link to="/auth/verify-email" className="text-muted-foreground hover:text-primary">
+								Verify email
 							</Link>
 							<Link to="/auth/register" className="text-muted-foreground hover:text-primary">
 								Create an account
