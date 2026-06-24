@@ -2,7 +2,9 @@ import DashboardHeader from "@/components/module/dashboard/header.tsx";
 import PageInfo from "@/components/module/dashboard/page-info.tsx";
 import DashboardSidebar from "@/components/module/dashboard/sidebar";
 import { accountMenuItems, mainMenuItems, supportMenuItems } from "@/config/sidebar";
-import { useState } from "react";
+import { getAuthToken } from "@/lib/session";
+import { useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 
 interface Props {
@@ -14,6 +16,13 @@ interface Props {
 
 const DashboardLayout = ({ children, title, description, actionTab }: Props) => {
 	const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+	const navigate = useNavigate();
+
+	useEffect(() => {
+		if (!getAuthToken()) {
+			void navigate({ to: "/auth/login" });
+		}
+	}, [navigate]);
 
 	return (
 		<div className="flex min-h-screen ">

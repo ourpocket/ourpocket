@@ -3,28 +3,23 @@ import { Button } from "@/components/ui/button";
 import {
 	Form,
 	FormControl,
-	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { resetPassword } from "@/lib/api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import * as z from "zod";
-
-interface FieldProps {
-	field: {
-		onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-		value: string;
-		name: string;
-	};
-}
 
 const resetPasswordSchema = z
 	.object({
+		email: z.string().email("Invalid email address"),
+		token: z.string().min(1, "Reset token is required"),
 		password: z.string().min(8, "Password must be at least 8 characters"),
 		confirmPassword: z.string(),
 	})
@@ -38,14 +33,27 @@ type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
 const ResetPassword = () => {
 	const navigate = useNavigate();
 	const form = useForm<ResetPasswordFormValues>({
+		defaultValues: {
+			email: "",
+			token: "",
+			password: "",
+			confirmPassword: "",
+		},
 		resolver: zodResolver(resetPasswordSchema),
 	});
 
 	const onSubmit = async (data: ResetPasswordFormValues) => {
 		try {
-			console.log(data);
+			await resetPassword({
+				email: data.email,
+				token: data.token,
+				newPassword: data.password,
+			});
+			toast.success("Password reset. Sign in with your new password.");
+			await navigate({ to: "/auth/login" });
 		} catch (error) {
-			console.error(error);
+			const message = error instanceof Error ? error.message : "Could not reset password";
+			toast.error(message);
 		}
 	};
 
@@ -58,6 +66,34 @@ const ResetPassword = () => {
 				</div>
 				<Form {...form}>
 					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+						<FormField
+							control={form.control}
+							name="email"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Email</FormLabel>
+									<FormControl>
+										<Input type="email" placeholder="name@example.com" {...field} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						<FormField
+							control={form.control}
+							name="token"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Reset Token</FormLabel>
+									<FormControl>
+										<Input type="text" placeholder="Paste your reset token" {...field} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
 						<FormField
 							control={form.control}
 							name="password"

@@ -15,21 +15,45 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select.tsx";
+import { type ProjectApiKey, ProjectApiKeyScope, createProjectApiKey } from "@/lib/api";
 import { createApiKey } from "@/schemas/misc.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import type { z } from "zod";
 
-const GenerateApiKeyModal = () => {
-	const form = useForm({
+type GenerateApiKeyFormValues = z.infer<typeof createApiKey>;
+
+interface GenerateApiKeyModalProps {
+	projectId: string;
+	onGenerated: (apiKey: ProjectApiKey) => void;
+}
+
+const GenerateApiKeyModal = ({ projectId, onGenerated }: GenerateApiKeyModalProps) => {
+	const form = useForm<GenerateApiKeyFormValues>({
 		defaultValues: {
 			name: "",
-			mode: "",
+			mode: ProjectApiKeyScope.TEST,
 		},
 		resolver: zodResolver(createApiKey),
 	});
 
-	const onSubmit = (data: any) => {
-		console.log("Generated API Key:", data);
+	const onSubmit = async (data: GenerateApiKeyFormValues) => {
+		try {
+			const apiKey = await createProjectApiKey(projectId, {
+				scope: data.mode as ProjectApiKeyScope,
+				description: data.name,
+			});
+			onGenerated(apiKey);
+			form.reset({
+				name: "",
+				mode: ProjectApiKeyScope.TEST,
+			});
+			toast.success("API key generated");
+		} catch (error) {
+			const message = error instanceof Error ? error.message : "Could not generate API key";
+			toast.error(message);
+		}
 	};
 
 	return (
@@ -71,8 +95,8 @@ const GenerateApiKeyModal = () => {
 					)}
 				/>
 
-				<Button type="submit" className={"w-full"}>
-					Generate Key 🔑
+				<Button type="submit" className={"w-full"} disabled={form.formState.isSubmitting}>
+					{form.formState.isSubmitting ? "Generating..." : "Generate Key"}
 				</Button>
 			</form>
 		</Form>

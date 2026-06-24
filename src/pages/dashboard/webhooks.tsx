@@ -3,6 +3,7 @@ import { ModularCard } from "@/components/module/card";
 import ModularModals from "@/components/module/popovers/modular-modals.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
 import { Button } from "@/components/ui/button.tsx";
+import { Input } from "@/components/ui/input";
 import {
 	Table,
 	TableBody,
@@ -11,55 +12,85 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table.tsx";
-import { Code1, Copy, Eye, EyeSlash } from "iconsax-reactjs";
+import {
+	type WebhookEndpoint,
+	WebhookEvent,
+	createWebhook,
+	deleteWebhook,
+	listWebhooks,
+} from "@/lib/api";
+import { useCurrentProject } from "@/lib/hooks/use-current-project";
+import { Copy, Eye, EyeSlash, Trash } from "iconsax-reactjs";
 import { ExternalLink } from "lucide-react";
 import moment from "moment";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import type { FormEvent } from "react";
+import { toast } from "sonner";
 
-const AddEndpoint = () => (
-	<ModularModals trigger={<Button variant="default">Add Endpoint</Button>} />
-);
+interface AddEndpointProps {
+	projectId?: string;
+	onCreated: (webhook: WebhookEndpoint) => void;
+}
+
+const AddEndpoint = ({ projectId, onCreated }: AddEndpointProps) => {
+	const [url, setUrl] = useState("");
+	const [isSubmitting, setIsSubmitting] = useState(false);
+
+	const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+
+		if (!projectId) {
+			return;
+		}
+
+		setIsSubmitting(true);
+
+		try {
+			const webhook = await createWebhook(projectId, {
+				url,
+				eventTypes: [WebhookEvent.TRANSACTION_SUCCESS, WebhookEvent.TRANSACTION_FAILED],
+				isActive: true,
+			});
+			onCreated(webhook);
+			setUrl("");
+			toast.success("Webhook endpoint added");
+		} catch (error) {
+			const message = error instanceof Error ? error.message : "Could not add webhook";
+			toast.error(message);
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
+
+	return (
+		<ModularModals trigger={<Button variant="default">Add Endpoint</Button>}>
+			<form onSubmit={handleSubmit} className="space-y-4">
+				<Input
+					value={url}
+					onChange={(event) => setUrl(event.target.value)}
+					placeholder="https://api.yourapp.com/ourpocket/webhook"
+					type="url"
+					required
+				/>
+				<Button type="submit" className="w-full" disabled={isSubmitting}>
+					{isSubmitting ? "Saving..." : "Save Endpoint"}
+				</Button>
+			</form>
+		</ModularModals>
+	);
+};
 
 const statusStyles: Record<string, string> = {
-	Success: "bg-green-100 text-green-700 border border-green-200",
-	Failed: "bg-red-100 text-red-700 border border-red-200",
-	Pending: "bg-yellow-100 text-yellow-700 border border-yellow-200",
+	Active: "bg-green-100 text-green-700 border border-green-200",
+	Inactive: "bg-red-100 text-red-700 border border-red-200",
 };
 
 const StatusBadge = ({ status }: { status: keyof typeof statusStyles }) => (
 	<Badge className={`${statusStyles[status]} px-2 py-0.5 rounded-md text-xs`}>{status}</Badge>
 );
 
-const webhookEvents = [
-	{
-		id: "wh_001",
-		type: "transaction.completed",
-		endpoint: "https://api.yourapp.com/webhooks/transactions",
-		status: "Success",
-		response: "200 OK",
-		timestamp: "2024-08-13 14:30:15",
-	},
-	{
-		id: "wh_002",
-		type: "wallet.funded",
-		endpoint: "https://api.yourapp.com/webhooks/wallets",
-		status: "Failed",
-		response: "500 Internal Server Error",
-		timestamp: "2024-08-13 14:25:03",
-	},
-	{
-		id: "wh_003",
-		type: "transaction.failed",
-		endpoint: "https://api.yourapp.com/webhooks/transactions",
-		status: "Pending",
-		response: "Retrying...",
-		timestamp: "2024-08-13 14:20:45",
-	},
-];
+const tableHeaders = ["Endpoint ID", "Events", "Endpoint", "Status", "Secret", "Created", "Action"];
 
-const tableHeaders = ["Event ID", "Event Type", "Endpoint", "Status", "Response", "Timestamp"];
-
-// 🔑 Webhook URL card
 const WebhookUrlCard = ({ url }: { url: string }) => {
 	const [isVisible, setIsVisible] = useState(false);
 
@@ -97,64 +128,126 @@ const WebhookUrlCard = ({ url }: { url: string }) => {
 	);
 };
 
-const WebhooksPage = () => (
-	<DashboardLayout>
-		<div className="flex flex-col gap-6">
-			{/* Webhook URL card */}
-			<WebhookUrlCard url="https://api.yourapp.com/webhooks/transactions" />
+const WebhooksPage = () => {
+	const { project, isLoading } = useCurrentProject();
+	const [webhooks, setWebhooks] = useState<WebhookEndpoint[]>([]);
+	const unifiedWebhookUrl = `${import.meta.env.VITE_API_PUBLIC_URL || "http://localhost:3000"}/ourpocket/webhook`;
 
-			{/* Recent webhook events */}
-			<div className="rounded-xl border bg-card p-6 shadow-md text-white">
-				<div className="flex items-center justify-between mb-6">
-					<div>
-						<h3 className="text-lg font-semibold mb-2">Recent Webhook Events</h3>
-						<p className="text-sm text-gray-300 mb-6">Real-time webhook delivery logs and status</p>
+	useEffect(() => {
+		let isMounted = true;
+
+		async function loadWebhooks() {
+			if (!project) {
+				return;
+			}
+
+			try {
+				const endpoints = await listWebhooks(project.id);
+				if (isMounted) {
+					setWebhooks(endpoints);
+				}
+			} catch (error) {
+				const message = error instanceof Error ? error.message : "Could not load webhooks";
+				toast.error(message);
+			}
+		}
+
+		void loadWebhooks();
+
+		return () => {
+			isMounted = false;
+		};
+	}, [project]);
+
+	const handleCreated = (webhook: WebhookEndpoint) => {
+		setWebhooks((current) => [webhook, ...current]);
+	};
+
+	const handleDelete = async (webhookId: string) => {
+		if (!project) {
+			return;
+		}
+
+		try {
+			await deleteWebhook(project.id, webhookId);
+			setWebhooks((current) => current.filter((webhook) => webhook.id !== webhookId));
+			toast.success("Webhook endpoint deleted");
+		} catch (error) {
+			const message = error instanceof Error ? error.message : "Could not delete webhook";
+			toast.error(message);
+		}
+	};
+
+	return (
+		<DashboardLayout>
+			<div className="flex flex-col gap-6">
+				<WebhookUrlCard url={unifiedWebhookUrl} />
+
+				<div className="rounded-xl border bg-card p-6 shadow-md text-white">
+					<div className="flex items-center justify-between mb-6">
+						<div>
+							<h3 className="text-lg font-semibold mb-2">Webhook Endpoints</h3>
+							<p className="text-sm text-gray-300 mb-6">
+								Configure where OurPocket sends normalized project events
+							</p>
+						</div>
+
+						<AddEndpoint projectId={project?.id} onCreated={handleCreated} />
 					</div>
 
-					<Button className="bg-gray-700/20">
-						Add Event <Code1 variant="Bulk" />
-					</Button>
-				</div>
+					{isLoading && <p className="mb-4 text-sm text-gray-500">Loading webhooks...</p>}
 
-				<Table>
-					<TableHeader>
-						<TableRow className="border-b border-gray-700">
-							{tableHeaders.map((head) => (
-								<TableHead key={head} className="text-gray-200 py-3 px-4">
-									{head}
-								</TableHead>
-							))}
-						</TableRow>
-					</TableHeader>
-					<TableBody>
-						{webhookEvents.map((event) => (
-							<TableRow key={event.id} className="hover:bg-gray-800 transition-colors">
-								<TableCell className="font-mono py-3 px-4">{event.id}</TableCell>
-								<TableCell className="py-3 px-4">
-									<Badge className="text-xs">{event.type}</Badge>
-								</TableCell>
-								<TableCell className="truncate max-w-[280px] py-3 px-4">{event.endpoint}</TableCell>
-								<TableCell className="py-3 px-4">
-									<StatusBadge status={event.status as keyof typeof statusStyles} />
-								</TableCell>
-								<TableCell className="py-3 px-4">{event.response}</TableCell>
-								<TableCell className="flex items-center gap-2 py-3 px-4 text-sm text-gray-300">
-									{moment(event.timestamp).format("MMM D, YYYY • h:mm A")}
-									<span className="text-xs text-gray-500">
-										({moment(event.timestamp).fromNow()})
-									</span>
-									<ExternalLink
-										size={14}
-										className="cursor-pointer text-gray-400 hover:text-white"
-									/>
-								</TableCell>
+					<Table>
+						<TableHeader>
+							<TableRow className="border-b border-gray-700">
+								{tableHeaders.map((head) => (
+									<TableHead key={head} className="text-gray-200 py-3 px-4">
+										{head}
+									</TableHead>
+								))}
 							</TableRow>
-						))}
-					</TableBody>
-				</Table>
+						</TableHeader>
+						<TableBody>
+							{webhooks.map((webhook) => (
+								<TableRow key={webhook.id} className="hover:bg-gray-800 transition-colors">
+									<TableCell className="font-mono py-3 px-4">{webhook.id}</TableCell>
+									<TableCell className="py-3 px-4">
+										{(webhook.eventTypes ?? []).map((event) => (
+											<Badge key={event} className="text-xs mr-1">
+												{event}
+											</Badge>
+										))}
+									</TableCell>
+									<TableCell className="truncate max-w-[280px] py-3 px-4">{webhook.url}</TableCell>
+									<TableCell className="py-3 px-4">
+										<StatusBadge status={webhook.isActive ? "Active" : "Inactive"} />
+									</TableCell>
+									<TableCell className="py-3 px-4 font-mono">
+										{`${webhook.secret.slice(0, 10)}********`}
+									</TableCell>
+									<TableCell className="flex items-center gap-2 py-3 px-4 text-sm text-gray-300">
+										{moment(webhook.createdAt).format("MMM D, YYYY • h:mm A")}
+										<span className="text-xs text-gray-500">
+											({moment(webhook.createdAt).fromNow()})
+										</span>
+										<ExternalLink
+											size={14}
+											className="cursor-pointer text-gray-400 hover:text-white"
+										/>
+									</TableCell>
+									<TableCell className="py-3 px-4">
+										<Button className="bg-gray-700/20" onClick={() => handleDelete(webhook.id)}>
+											<Trash variant="Bulk" size={16} />
+										</Button>
+									</TableCell>
+								</TableRow>
+							))}
+						</TableBody>
+					</Table>
+				</div>
 			</div>
-		</div>
-	</DashboardLayout>
-);
+		</DashboardLayout>
+	);
+};
 
 export default WebhooksPage;

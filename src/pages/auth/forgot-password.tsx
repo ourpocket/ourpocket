@@ -3,16 +3,17 @@ import { Button } from "@/components/ui/button";
 import {
 	Form,
 	FormControl,
-	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { requestPasswordReset } from "@/lib/api";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import * as z from "zod";
 
 const forgotPasswordSchema = z.object({
@@ -21,25 +22,21 @@ const forgotPasswordSchema = z.object({
 
 type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 
-interface FieldProps {
-	field: {
-		onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-		value: string;
-		name: string;
-	};
-}
-
 const ForgotPassword = () => {
-	const navigate = useNavigate();
 	const form = useForm<ForgotPasswordFormValues>({
+		defaultValues: {
+			email: "",
+		},
 		resolver: zodResolver(forgotPasswordSchema),
 	});
 
 	const onSubmit = async (data: ForgotPasswordFormValues) => {
 		try {
-			console.log(data);
+			await requestPasswordReset(data.email);
+			toast.success("Password reset link sent if the account exists.");
 		} catch (error) {
-			console.error(error);
+			const message = error instanceof Error ? error.message : "Could not send reset link";
+			toast.error(message);
 		}
 	};
 

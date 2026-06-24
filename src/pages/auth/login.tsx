@@ -3,28 +3,22 @@ import { Button } from "@/components/ui/button";
 import {
 	Form,
 	FormControl,
-	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { ensureDefaultProject, login } from "@/lib/api";
+import { setAuthToken } from "@/lib/session";
 import { loginSchema } from "@/schemas/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import type * as z from "zod";
 
 type LoginFormValues = z.infer<typeof loginSchema>;
-
-interface FieldProps {
-	field: {
-		onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-		value: string;
-		name: string;
-	};
-}
 
 const Login = () => {
 	const navigate = useNavigate();
@@ -38,9 +32,14 @@ const Login = () => {
 
 	const onSubmit = async (data: LoginFormValues) => {
 		try {
-			console.log(data);
+			const response = await login(data);
+			setAuthToken(response.token);
+			await ensureDefaultProject();
+			toast.success("Signed in successfully");
+			await navigate({ to: "/dashboard" });
 		} catch (error) {
-			console.error(error);
+			const message = error instanceof Error ? error.message : "Could not sign in";
+			toast.error(message);
 		}
 	};
 
@@ -94,9 +93,17 @@ const Login = () => {
 							/>
 						</div>
 
-						<Button type="submit" disabled={form.formState.isSubmitting}>
+						<Button type="submit" className={"w-full"} disabled={form.formState.isSubmitting}>
 							{form.formState.isSubmitting ? "Signing in..." : "Sign In"}
 						</Button>
+						<div className="flex justify-center gap-3 text-sm">
+							<Link to="/auth/forgot-password" className="text-muted-foreground hover:text-primary">
+								Forgot password?
+							</Link>
+							<Link to="/auth/register" className="text-muted-foreground hover:text-primary">
+								Create an account
+							</Link>
+						</div>
 					</form>
 				</Form>
 			</div>

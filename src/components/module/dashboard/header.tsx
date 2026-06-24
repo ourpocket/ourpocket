@@ -5,10 +5,19 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu.tsx";
+import { clearAuthToken } from "@/lib/session";
+import { useNavigate } from "@tanstack/react-router";
 import Avatar from "boring-avatars";
 import { ArrowDown2, Notification } from "iconsax-reactjs";
 
 const DashboardHeader = () => {
+	const navigate = useNavigate();
+
+	const handleLogout = async () => {
+		clearAuthToken();
+		await navigate({ to: "/auth/login" });
+	};
+
 	return (
 		<div className="bg-card w-full h-16 px-[3em] flex items-center">
 			<div className="container mx-auto  flex items-center justify-between">
@@ -21,7 +30,6 @@ const DashboardHeader = () => {
 							"bg-transparent font-semibold hover:bg-[var(--default)]" +
 							" border-red-500/20 hover:text-white"
 						}
-						onClick={() => console.log("Test Mode")}
 					>
 						<div className={"bg-red-500 w-2 h-2 rounded-full mr-2"} />
 						<small>Test Mode</small>
@@ -40,9 +48,7 @@ const DashboardHeader = () => {
 						</DropdownMenuTrigger>
 
 						<DropdownMenuContent className="w-40">
-							<DropdownMenuItem onClick={() => console.log("Logging out...")}>
-								Logout
-							</DropdownMenuItem>
+							<DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
 				</div>
