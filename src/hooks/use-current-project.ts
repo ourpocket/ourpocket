@@ -1,6 +1,6 @@
 import { useErrorHandler } from "@/hooks/use-error-handler";
 import { getAuthToken } from "@/lib/session";
-import { ensureDefaultProject } from "@/services/project.service";
+import { getSelectedProject } from "@/services/project.service";
 import type { Project } from "@/services/types";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
@@ -21,9 +21,13 @@ function useCurrentProject() {
 			}
 
 			try {
-				const currentProject = await ensureDefaultProject();
+				const currentProject = await getSelectedProject();
 				if (isMounted) {
 					setProject(currentProject);
+				}
+
+				if (!currentProject) {
+					await navigate({ to: "/dashboard/projects" });
 				}
 			} catch (error) {
 				handleError(error);

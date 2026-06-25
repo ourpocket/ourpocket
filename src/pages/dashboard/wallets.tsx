@@ -11,12 +11,12 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useWallets } from "@/hooks/use-wallets";
-import { ProviderType, RoutingStrategy } from "@/services/types";
+import { type ProviderCredential, ProviderType, RoutingStrategy } from "@/services/types";
 import { useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import { toast } from "sonner";
 
-const providerOptions = Object.values(ProviderType);
+const providerOptions = [ProviderType.PAYSTACK, ProviderType.FLUTTERWAVE];
 const routingOptions = Object.values(RoutingStrategy);
 
 const blankWalletAction = {
@@ -25,8 +25,10 @@ const blankWalletAction = {
 	currency: "NGN",
 	reference: "",
 	provider: "none",
+	providerApiKey: "",
 	routingStrategy: "none",
 	providerPriority: "",
+	providerCredentials: "[]",
 	providerPayload: "{}",
 };
 
@@ -40,7 +42,13 @@ function ResultPanel({ result }: { result: unknown }) {
 	);
 }
 
-function OperationCard({ title, children }: { title: string; children: ReactNode }) {
+function OperationCard({
+	title,
+	children,
+}: {
+	title: string;
+	children: ReactNode;
+}) {
 	return (
 		<ModularCard title={title} content className="w-full">
 			{children}
@@ -73,6 +81,15 @@ function parseJsonObject(value: string) {
 	return JSON.parse(value) as Record<string, unknown>;
 }
 
+function parseProviderCredentials(value: string) {
+	if (!value.trim()) {
+		return undefined;
+	}
+
+	const parsed = JSON.parse(value) as ProviderCredential[];
+	return Array.isArray(parsed) && parsed.length > 0 ? parsed : undefined;
+}
+
 const WalletsPage = () => {
 	const { createWallet, creditWallet, debitWallet, getWallet, isLoading, transferWallet } =
 		useWallets();
@@ -80,7 +97,29 @@ const WalletsPage = () => {
 	const [result, setResult] = useState<unknown>(null);
 	const [createPayload, setCreatePayload] = useState({
 		currency: "NGN",
-		accountId: "",
+		userId: "",
+		provider: ProviderType.FLUTTERWAVE,
+		providerCredentials: JSON.stringify(
+			[
+				{
+					provider: ProviderType.FLUTTERWAVE,
+					apiKey: "",
+				},
+			],
+			null,
+			2,
+		),
+		providerPayload: JSON.stringify(
+			{
+				email: "sudo.whoami@example.com",
+				first_name: "sudo",
+				last_name: "whoami",
+				narration: "OurPocket wallet",
+				Phone_no: "",
+			},
+			null,
+			2,
+		),
 	});
 	const [lookupWalletId, setLookupWalletId] = useState("");
 	const [creditPayload, setCreditPayload] = useState(blankWalletAction);
@@ -107,9 +146,23 @@ const WalletsPage = () => {
 		const apiKey = requireApiKey();
 		if (!apiKey) return;
 
+		let providerPayload: Record<string, unknown> | undefined;
+		let providerCredentials: ProviderCredential[] | undefined;
+
+		try {
+			providerPayload = parseJsonObject(createPayload.providerPayload);
+			providerCredentials = parseProviderCredentials(createPayload.providerCredentials);
+		} catch {
+			toast.error("Provider payload and credentials must be valid JSON");
+			return;
+		}
+
 		const response = await createWallet(apiKey, {
-			currency: createPayload.currency,
-			accountId: createPayload.accountId || undefined,
+			currency: createPayload.currency || undefined,
+			userId: createPayload.userId || undefined,
+			provider: resolveProvider(createPayload.provider),
+			providerCredentials,
+			providerPayload,
 		});
 		setResult(response);
 		toast.success("Wallet created");
@@ -133,11 +186,13 @@ const WalletsPage = () => {
 			const payload = type === "credit" ? creditPayload : debitPayload;
 			const action = type === "credit" ? creditWallet : debitWallet;
 			let providerPayload: Record<string, unknown> | undefined;
+			let providerCredentials: ProviderCredential[] | undefined;
 
 			try {
 				providerPayload = parseJsonObject(payload.providerPayload);
+				providerCredentials = parseProviderCredentials(payload.providerCredentials);
 			} catch {
-				toast.error("Provider payload must be valid JSON");
+				toast.error("Provider payload and credentials must be valid JSON");
 				return;
 			}
 
@@ -147,8 +202,10 @@ const WalletsPage = () => {
 				currency: payload.currency,
 				reference: payload.reference,
 				provider: resolveProvider(payload.provider),
+				apiKey: payload.providerApiKey || undefined,
 				routingStrategy: resolveRoutingStrategy(payload.routingStrategy),
 				providerPriority: resolveProviderPriority(payload.providerPriority),
+				providerCredentials,
 				providerPayload,
 			});
 			setResult(response);
@@ -231,9 +288,19 @@ const WalletsPage = () => {
 				</Select>
 			</div>
 			<Input
+				value={payload.providerApiKey}
+				onChange={(event) => onChange({ ...payload, providerApiKey: event.target.value })}
+				placeholder="Provider secret key"
+			/>
+			<Input
 				value={payload.providerPriority}
 				onChange={(event) => onChange({ ...payload, providerPriority: event.target.value })}
 				placeholder="Provider priority CSV, e.g. paystack,flutterwave"
+			/>
+			<Textarea
+				value={payload.providerCredentials}
+				onChange={(event) => onChange({ ...payload, providerCredentials: event.target.value })}
+				placeholder="Provider credentials JSON array for routing"
 			/>
 			<Textarea
 				value={payload.providerPayload}
@@ -270,11 +337,50 @@ const WalletsPage = () => {
 									required
 								/>
 								<Input
-									value={createPayload.accountId}
+									value={createPayload.userId}
 									onChange={(event) =>
-										setCreatePayload({ ...createPayload, accountId: event.target.value })
+										setCreatePayload({
+											...createPayload,
+											userId: event.target.value,
+										})
 									}
-									placeholder="Project account ID"
+									placeholder="External user ID"
+								/>
+								<Select
+									value={createPayload.provider}
+									onValueChange={(provider) => setCreatePayload({ ...createPayload, provider })}
+								>
+									<SelectTrigger className="w-full">
+										<SelectValue placeholder="Provider" />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="none">No provider</SelectItem>
+										{providerOptions.map((provider) => (
+											<SelectItem key={provider} value={provider}>
+												{provider}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+								<Textarea
+									value={createPayload.providerCredentials}
+									onChange={(event) =>
+										setCreatePayload({
+											...createPayload,
+											providerCredentials: event.target.value,
+										})
+									}
+									placeholder="Provider credentials JSON array for routing"
+								/>
+								<Textarea
+									value={createPayload.providerPayload}
+									onChange={(event) =>
+										setCreatePayload({
+											...createPayload,
+											providerPayload: event.target.value,
+										})
+									}
+									placeholder="Provider payload JSON"
 								/>
 								<Button type="submit" disabled={isLoading}>
 									Create Wallet

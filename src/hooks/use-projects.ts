@@ -10,11 +10,10 @@ function useProjects() {
 		getProject: (projectId: string) => run(() => projectService.getProject(projectId)),
 		createProject: (payload: {
 			name: string;
-			slug?: string;
 			description?: string;
 			metadata?: Record<string, unknown>;
 		}) => run(() => projectService.createProject(payload)),
-		ensureDefaultProject: () => run(() => projectService.ensureDefaultProject()),
+		getSelectedProject: () => run(() => projectService.getSelectedProject()),
 	};
 }
 

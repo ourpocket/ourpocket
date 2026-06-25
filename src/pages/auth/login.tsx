@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
-import { useProjects } from "@/hooks/use-projects";
 import { setAuthToken } from "@/lib/session";
 import { loginSchema } from "@/schemas/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,7 +23,6 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 const Login = () => {
 	const navigate = useNavigate();
 	const { login } = useAuth();
-	const { ensureDefaultProject } = useProjects();
 	const form = useForm<LoginFormValues>({
 		defaultValues: {
 			email: "",
@@ -37,7 +35,6 @@ const Login = () => {
 		try {
 			const response = await login(data);
 			setAuthToken(response.token);
-			await ensureDefaultProject();
 			toast.success("Signed in successfully");
 			await navigate({ to: "/dashboard" });
 		} catch (error) {

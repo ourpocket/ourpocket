@@ -140,20 +140,38 @@ interface WalletBalanceResponse {
 	balance: unknown;
 }
 
-interface CreateWalletPayload {
-	currency: string;
-	accountId?: string;
+interface ProviderCredential {
+	provider: ProviderType;
+	apiKey: string;
+	successRate?: number;
+	feePercentage?: number;
+	settlementMinutes?: number;
+	priority?: number;
 }
 
-interface WalletLedgerPayload {
+interface ProviderRoutingPayload {
+	provider?: ProviderType;
+	apiKey?: string;
+	providerApiKey?: string;
+	routingStrategy?: RoutingStrategy;
+	providerPriority?: ProviderType[];
+	providerCredentials?: ProviderCredential[];
+	providerPayload?: Record<string, unknown>;
+}
+
+interface CreateWalletPayload {
+	currency?: string;
+	userId?: string;
+	provider?: ProviderType;
+	providerCredentials?: ProviderCredential[];
+	providerPayload?: Record<string, unknown>;
+}
+
+interface WalletLedgerPayload extends ProviderRoutingPayload {
 	walletId: string;
 	amount: string;
 	currency: string;
 	reference: string;
-	provider?: ProviderType;
-	routingStrategy?: RoutingStrategy;
-	providerPriority?: ProviderType[];
-	providerPayload?: Record<string, unknown>;
 	metadata?: Record<string, unknown>;
 }
 
@@ -182,7 +200,7 @@ interface Transaction {
 	createdAt: string;
 }
 
-interface CreateTransactionPayload {
+interface CreateTransactionPayload extends ProviderRoutingPayload {
 	type: TransactionType;
 	amount: string;
 	currency: string;
@@ -190,10 +208,6 @@ interface CreateTransactionPayload {
 	walletId?: string;
 	fromWalletId?: string;
 	toWalletId?: string;
-	provider?: ProviderType;
-	routingStrategy?: RoutingStrategy;
-	providerPriority?: ProviderType[];
-	providerPayload?: Record<string, unknown>;
 	metadata?: Record<string, unknown>;
 }
 
@@ -229,6 +243,7 @@ export type {
 	LegacyWalletProvider,
 	LoginResponse,
 	PlatformAccount,
+	ProviderCredential,
 	Project,
 	ProjectApiKey,
 	ProjectProvider,

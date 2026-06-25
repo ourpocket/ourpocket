@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useTransactions } from "@/hooks/use-transactions";
 import {
 	type CreateTransactionPayload,
+	type ProviderCredential,
 	ProviderType,
 	RoutingStrategy,
 	TransactionType,
@@ -21,7 +22,7 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { toast } from "sonner";
 
-const providerOptions = Object.values(ProviderType);
+const providerOptions = [ProviderType.PAYSTACK, ProviderType.FLUTTERWAVE];
 const routingOptions = Object.values(RoutingStrategy);
 const transactionTypeOptions = Object.values(TransactionType);
 
@@ -31,6 +32,15 @@ function parseJsonObject(value: string) {
 	}
 
 	return JSON.parse(value) as Record<string, unknown>;
+}
+
+function parseProviderCredentials(value: string) {
+	if (!value.trim()) {
+		return undefined;
+	}
+
+	const parsed = JSON.parse(value) as ProviderCredential[];
+	return Array.isArray(parsed) && parsed.length > 0 ? parsed : undefined;
 }
 
 function ResultPanel({ result }: { result: unknown }) {
@@ -50,8 +60,10 @@ const TransactionsPage = () => {
 	const [projectApiKey, setProjectApiKey] = useState("");
 	const [transactionId, setTransactionId] = useState("");
 	const [provider, setProvider] = useState("none");
+	const [providerApiKey, setProviderApiKey] = useState("");
 	const [routingStrategy, setRoutingStrategy] = useState("none");
 	const [providerPriority, setProviderPriority] = useState("");
+	const [providerCredentials, setProviderCredentials] = useState("[]");
 	const [providerPayload, setProviderPayload] = useState("{}");
 	const [metadata, setMetadata] = useState("{}");
 	const [result, setResult] = useState<unknown>(null);
@@ -81,12 +93,14 @@ const TransactionsPage = () => {
 
 		let parsedProviderPayload: Record<string, unknown> | undefined;
 		let parsedMetadata: Record<string, unknown> | undefined;
+		let parsedProviderCredentials: ProviderCredential[] | undefined;
 
 		try {
 			parsedProviderPayload = parseJsonObject(providerPayload);
 			parsedMetadata = parseJsonObject(metadata);
+			parsedProviderCredentials = parseProviderCredentials(providerCredentials);
 		} catch {
-			toast.error("Provider payload and metadata must be valid JSON");
+			toast.error("Provider payload, credentials, and metadata must be valid JSON");
 			return;
 		}
 
@@ -99,12 +113,14 @@ const TransactionsPage = () => {
 			fromWalletId: payload.fromWalletId || undefined,
 			toWalletId: payload.toWalletId || undefined,
 			provider: provider === "none" ? undefined : (provider as ProviderType),
+			apiKey: providerApiKey || undefined,
 			routingStrategy:
 				routingStrategy === "none" ? undefined : (routingStrategy as RoutingStrategy),
 			providerPriority: providerPriority
 				.split(",")
 				.map((item) => item.trim())
 				.filter(Boolean) as ProviderType[],
+			providerCredentials: parsedProviderCredentials,
 			providerPayload: parsedProviderPayload,
 			metadata: parsedMetadata,
 		};
@@ -238,6 +254,16 @@ const TransactionsPage = () => {
 								value={providerPriority}
 								onChange={(event) => setProviderPriority(event.target.value)}
 								placeholder="Provider priority CSV"
+							/>
+							<Input
+								value={providerApiKey}
+								onChange={(event) => setProviderApiKey(event.target.value)}
+								placeholder="Provider secret key"
+							/>
+							<Textarea
+								value={providerCredentials}
+								onChange={(event) => setProviderCredentials(event.target.value)}
+								placeholder="Provider credentials JSON array for routing"
 							/>
 							<Textarea
 								value={providerPayload}

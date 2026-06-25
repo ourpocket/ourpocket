@@ -22,4 +22,15 @@ function setStoredProjectId(projectId: string) {
 	window.localStorage.setItem(PROJECT_ID_KEY, projectId);
 }
 
-export { clearAuthToken, getAuthToken, getStoredProjectId, setAuthToken, setStoredProjectId };
+function clearStoredProjectId() {
+	window.localStorage.removeItem(PROJECT_ID_KEY);
+}
+
+export {
+	clearAuthToken,
+	clearStoredProjectId,
+	getAuthToken,
+	getStoredProjectId,
+	setAuthToken,
+	setStoredProjectId,
+};

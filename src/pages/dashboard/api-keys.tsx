@@ -21,10 +21,10 @@ const GenerateNewApiKey = ({ projectId, onGenerated }: GenerateNewApiKeyProps) =
 	}
 
 	return (
-		<ModularModals trigger={<Button variant={"sleep"}>Generate Api Key 🔑</Button>}>
+		<ModularModals trigger={<Button variant={"sleep"}>Generate API Key</Button>}>
 			<div className={"mb-4"}>
-				<h4 className={"text-lg font-semibold"}>Generate new Api Key</h4>
-				<small className={"text-white/70"}>Generate new key for your Application</small>
+				<h4 className={"text-lg font-semibold"}>Generate New API Key</h4>
+				<small className={"text-white/70"}>Generate a project key for your application</small>
 			</div>
 			<GenerateApiKeyModal projectId={projectId} onGenerated={onGenerated} />
 		</ModularModals>
@@ -36,6 +36,23 @@ const scopeTitle: Record<ProjectApiKeyScope, string> = {
 	[ProjectApiKeyScope.LIVE]: "Production Environment",
 };
 
+async function copyText(value: string) {
+	if (navigator.clipboard?.writeText) {
+		await navigator.clipboard.writeText(value);
+		return;
+	}
+
+	const textarea = document.createElement("textarea");
+	textarea.value = value;
+	textarea.setAttribute("readonly", "true");
+	textarea.style.position = "fixed";
+	textarea.style.opacity = "0";
+	document.body.appendChild(textarea);
+	textarea.select();
+	document.execCommand("copy");
+	document.body.removeChild(textarea);
+}
+
 const ApiKeyCard = ({
 	apiKey,
 	onRevoke,
@@ -44,46 +61,58 @@ const ApiKeyCard = ({
 	onRevoke: (apiKeyId: string) => void;
 }) => {
 	const [isVisible, setIsVisible] = useState(false);
-	const visibleKey = apiKey.rawKey || apiKey.keyPreview || apiKey.id;
-	const maskedKey = visibleKey.length > 18 ? `${visibleKey.slice(0, 14)}********` : visibleKey;
+	const canRevealFullKey = Boolean(apiKey.rawKey);
+	const displayKey = apiKey.rawKey ?? apiKey.keyPreview ?? apiKey.id;
+	const maskedKey =
+		displayKey.length > 18 ? `${displayKey.slice(0, 14)}${"*".repeat(8)}` : displayKey;
+	const keyText = isVisible || !canRevealFullKey ? displayKey : maskedKey;
 
 	const handleCopy = async () => {
-		if (!apiKey.rawKey) {
-			toast.info("Only newly generated keys can be copied.");
+		try {
+			await copyText(displayKey);
+		} catch {
+			toast.error("Could not copy API key");
 			return;
 		}
 
-		await navigator.clipboard.writeText(apiKey.rawKey);
-		toast.success("API key copied");
+		if (apiKey.rawKey) {
+			toast.success("API key copied");
+			return;
+		}
+
+		toast.success("API key preview copied");
 	};
 
 	return (
 		<ModularCard title={scopeTitle[apiKey.scope]} content={true} className={"w-full"}>
 			<div className={"flex items-center justify-between"}>
-				<div className={"bg-gray-700/20 p-2 rounded-md w-fit"}>
-					<p className={"text-sm"}>{isVisible ? visibleKey : maskedKey}</p>
+				<div className={"bg-gray-700/20 p-2 rounded-md w-fit max-w-full"}>
+					<p className={"text-sm break-all"}>{keyText}</p>
 					<small className="text-gray-500">
 						{apiKey.used ?? 0}/{apiKey.quota ?? 1000} requests
 					</small>
+					{!apiKey.rawKey && (
+						<p className="mt-1 text-xs text-gray-500">
+							Full key is shown only when it is generated.
+						</p>
+					)}
 				</div>
 
 				<div className={"flex gap-2 mt-2"}>
 					<Copy variant={"Bulk"} size={20} className="cursor-pointer" onClick={handleCopy} />
-					{isVisible ? (
-						<EyeSlash
-							variant={"Bulk"}
-							size={20}
-							className="cursor-pointer"
-							onClick={() => setIsVisible(false)}
-						/>
-					) : (
-						<Eye
-							variant={"Bulk"}
-							size={20}
-							className="cursor-pointer"
-							onClick={() => setIsVisible(true)}
-						/>
-					)}
+					<button
+						type="button"
+						disabled={!canRevealFullKey}
+						className={!canRevealFullKey ? "cursor-not-allowed opacity-40" : "cursor-pointer"}
+						onClick={() => setIsVisible((current) => !current)}
+						aria-label={isVisible ? "Hide API key" : "Show API key"}
+					>
+						{isVisible ? (
+							<EyeSlash variant={"Bulk"} size={20} />
+						) : (
+							<Eye variant={"Bulk"} size={20} />
+						)}
+					</button>
 					<Trash
 						variant={"Bulk"}
 						size={20}
@@ -148,7 +177,7 @@ const ApiKeysPage = () => {
 
 	return (
 		<DashboardLayout
-			title={"Api Key"}
+			title={"API Keys"}
 			description={"Manage your API keys"}
 			actionTab={<GenerateNewApiKey projectId={project?.id} onGenerated={handleGenerated} />}
 		>

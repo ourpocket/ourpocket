@@ -10,15 +10,13 @@ const Hero = () => {
       dark:text-black text-sm font-semibold px-5 py-2 rounded-lg
       flex items-center justify-center gap-2 shadow-md hover:scale-[1.02] transition"
 				data-tally-open="wAg0py"
-				data-tally-emoji-text="👋"
-				data-tally-emoji-animation="wave"
 			>
 				<span>Get Started</span>
 			</button>
 
 			{ENVIRONMENT_MODE.DEV && (
 				<Link to={"/auth/login"}>
-					<Button>Authenticte</Button>
+					<Button>Authenticate</Button>
 				</Link>
 			)}
 		</div>
@@ -61,10 +59,8 @@ provider: 'flutterwave',
 apiKey: process.env.FLW_SECRET_KEY,
 });
 
-// Create a wallet
 const userWallet = await wallet.createWallet(userId);
 
-// 💵 Fund a wallet
 await wallet.fundWallet({
 userId,
 amount: 5000,

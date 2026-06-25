@@ -1,4 +1,4 @@
-import { getStoredProjectId, setStoredProjectId } from "@/lib/session";
+import { clearStoredProjectId, getStoredProjectId } from "@/lib/session";
 import { apiRequest } from "@/services/api-client";
 import { API_ROUTES } from "@/services/api-routes";
 import type { Project } from "@/services/types";
@@ -9,7 +9,6 @@ function listProjects() {
 
 function createProject(payload: {
 	name: string;
-	slug?: string;
 	description?: string;
 	metadata?: Record<string, unknown>;
 }) {
@@ -23,8 +22,12 @@ function getProject(projectId: string) {
 	return apiRequest<Project>(API_ROUTES.projects.detail(projectId));
 }
 
-async function ensureDefaultProject() {
+async function getSelectedProject() {
 	const storedProjectId = getStoredProjectId();
+	if (!storedProjectId) {
+		return null;
+	}
+
 	const projects = await listProjects();
 	const storedProject = projects.find((project) => project.id === storedProjectId);
 
@@ -32,18 +35,8 @@ async function ensureDefaultProject() {
 		return storedProject;
 	}
 
-	if (projects[0]) {
-		setStoredProjectId(projects[0].id);
-		return projects[0];
-	}
-
-	const project = await createProject({
-		name: "Default Project",
-		slug: "default-project",
-		description: "Main OurPocket integration project",
-	});
-	setStoredProjectId(project.id);
-	return project;
+	clearStoredProjectId();
+	return null;
 }
 
-export { createProject, ensureDefaultProject, getProject, listProjects };
+export { createProject, getProject, getSelectedProject, listProjects };
