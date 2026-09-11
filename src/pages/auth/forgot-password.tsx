@@ -24,6 +24,7 @@ type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 
 const ForgotPassword = () => {
 	const { requestPasswordReset } = useAuth();
+
 	const form = useForm<ForgotPasswordFormValues>({
 		defaultValues: {
 			email: "",
@@ -42,17 +43,13 @@ const ForgotPassword = () => {
 	};
 
 	return (
-		<AuthLayout>
-			<div className="flex flex-col space-y-6 w-full max-w-md mx-auto">
-				<div className="flex flex-col space-y-2 text-center">
-					<h1 className="text-2xl font-semibold tracking-tight">Reset your password</h1>
-					<p className="text-sm text-muted-foreground">
-						Enter your email address and we'll send you a link to reset your password
-					</p>
-				</div>
-
+		<AuthLayout
+			title="Recover your account"
+			description="Enter your email address and we’ll send password reset instructions."
+		>
+			<div className="w-full">
 				<Form {...form}>
-					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+					<form onSubmit={form.handleSubmit(onSubmit)}>
 						<FormField
 							control={form.control}
 							name="email"
@@ -60,7 +57,7 @@ const ForgotPassword = () => {
 								<FormItem>
 									<FormLabel>Email</FormLabel>
 									<FormControl>
-										<Input type="email" placeholder="name@example.com" {...field} />
+										<Input type="email" placeholder="name@company.com" {...field} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -68,13 +65,16 @@ const ForgotPassword = () => {
 						/>
 
 						<Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-							{form.formState.isSubmitting ? "Sending reset link..." : "Send reset link"}
+							{form.formState.isSubmitting ? "Sending instructions…" : "Send reset instructions"}
 						</Button>
 					</form>
 				</Form>
 
-				<div className="text-center">
-					<Link to="/auth/login" className="text-sm text-muted-foreground hover:text-primary">
+				<div className="border-t border-[#2d2d2d] pt-5 text-center">
+					<Link
+						to="/auth/login"
+						className="whitespace-nowrap text-sm text-zinc-500 transition-colors hover:text-white"
+					>
 						Back to login
 					</Link>
 				</div>

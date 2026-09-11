@@ -33,6 +33,7 @@ type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
 const ResetPassword = () => {
 	const navigate = useNavigate();
 	const { resetPassword } = useAuth();
+
 	const form = useForm<ResetPasswordFormValues>({
 		defaultValues: {
 			email: "",
@@ -59,14 +60,13 @@ const ResetPassword = () => {
 	};
 
 	return (
-		<AuthLayout>
-			<div className="flex flex-col space-y-6 w-full max-w-md mx-auto">
-				<div className="flex flex-col space-y-2 text-center">
-					<h1 className="text-2xl font-semibold tracking-tight">Reset your password</h1>
-					<p className="text-sm text-muted-foreground">Enter your new password below</p>
-				</div>
+		<AuthLayout
+			title="Choose a new password"
+			description="Enter the reset token from your email and choose a secure password."
+		>
+			<div className="w-full">
 				<Form {...form}>
-					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+					<form onSubmit={form.handleSubmit(onSubmit)}>
 						<FormField
 							control={form.control}
 							name="email"
@@ -124,10 +124,13 @@ const ResetPassword = () => {
 						/>
 
 						<Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-							{form.formState.isSubmitting ? "Resetting password..." : "Reset password"}
+							{form.formState.isSubmitting ? "Updating password…" : "Update password"}
 						</Button>
-						<div className="text-center">
-							<Link to="/auth/login" className="text-sm text-muted-foreground hover:text-primary">
+						<div className="border-t border-[#2d2d2d] pt-5 text-center">
+							<Link
+								to="/auth/login"
+								className="whitespace-nowrap text-sm text-zinc-500 transition-colors hover:text-white"
+							>
 								Back to login
 							</Link>
 						</div>

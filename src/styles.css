@@ -4,6 +4,11 @@
 
 @custom-variant dark (&:is(.dark *));
 
+html,
+body {
+  overflow-x: clip;
+}
+
 body {
   @apply m-0;
   -webkit-font-smoothing: antialiased;
