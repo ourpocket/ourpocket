@@ -368,14 +368,30 @@ body {
   grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 .provider-list span {
-  min-height: 3.5rem;
-  display: grid;
-  place-items: center;
+  min-height: 4.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding-inline: 0.75rem;
   border-inline-start: var(--rule-thin) solid var(--color-rule);
-  color: var(--color-muted);
-  font-family: var(--font-code);
-  font-size: var(--text-xs);
-  letter-spacing: 0.04em;
+}
+.provider-logo img {
+  width: 100%;
+  max-width: 8rem;
+  height: 2rem;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  opacity: 0.8;
+}
+.provider-logo:has(b) img {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+.provider-logo b {
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  font-weight: 700;
 }
 .provider-list span:last-child {
   border-inline-end: var(--rule-thin) solid var(--color-rule);
