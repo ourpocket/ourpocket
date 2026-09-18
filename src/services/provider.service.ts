@@ -3,12 +3,31 @@ import { API_ROUTES } from "@/services/api-routes";
 import {
 	type LegacyWalletProvider,
 	type ProjectProvider,
+	type ProviderCatalog,
 	ProviderType,
 	WalletProviderAction,
 } from "@/services/types";
 
 function listProjectProviders(projectId: string) {
 	return apiRequest<ProjectProvider[]>(API_ROUTES.projects.providers.list(projectId));
+}
+
+function listProviderCatalog() {
+	return apiRequest<ProviderCatalog[]>(API_ROUTES.providerCatalog.list);
+}
+
+function connectProjectProvider(
+	projectId: string,
+	payload: {
+		providerId: string;
+		config: Record<string, string>;
+		isActive?: boolean;
+	},
+) {
+	return apiRequest<ProjectProvider>(API_ROUTES.projects.providers.connect(projectId), {
+		method: "POST",
+		body: JSON.stringify(payload),
+	});
 }
 
 function configureProjectProvider(
@@ -85,8 +104,10 @@ function runWalletProviderAction(
 export {
 	addWalletProvider,
 	configureProjectProvider,
+	connectProjectProvider,
 	createWalletWithProvider,
 	listProjectProviders,
+	listProviderCatalog,
 	listWalletProvidersCatalog,
 	removeWalletProvider,
 	runWalletProviderAction,

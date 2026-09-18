@@ -12,6 +12,9 @@ const API_ROUTES = {
 		me: "/platform-accounts/me",
 		projects: "/platform-accounts/me/projects",
 	},
+	providerCatalog: {
+		list: "/provider-catalog",
+	},
 	projects: {
 		list: "/projects",
 		create: "/projects",
@@ -25,6 +28,7 @@ const API_ROUTES = {
 		providers: {
 			list: (projectId: string) => `/projects/${projectId}/providers`,
 			configure: (projectId: string) => `/projects/${projectId}/providers`,
+			connect: (projectId: string) => `/projects/${projectId}/providers/connect`,
 		},
 		webhooks: {
 			list: (projectId: string) => `/projects/${projectId}/webhooks`,

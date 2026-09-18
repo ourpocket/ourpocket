@@ -10,6 +10,27 @@ enum ProviderType {
 	FINGRA = "fingra",
 }
 
+enum ProviderCatalogStatus {
+	DRAFT = "draft",
+	COMING_SOON = "coming_soon",
+	ACTIVE = "active",
+	MAINTENANCE = "maintenance",
+	RETIRED = "retired",
+}
+
+enum ProviderCategory {
+	AFRICA = "africa",
+	GLOBAL = "global",
+	DATA_VERIFICATION = "data_verification",
+}
+
+enum ProviderCapability {
+	WALLET_OPERATIONS = "wallet_operations",
+	PAYMENT_COLLECTION = "payment_collection",
+	BANK_DATA = "bank_data",
+	IDENTITY_VERIFICATION = "identity_verification",
+}
+
 enum RoutingStrategy {
 	BEST_SUCCESS_RATE = "best_success_rate",
 	LOWEST_FEES = "lowest_fees",
@@ -88,9 +109,33 @@ interface ProjectApiKey {
 interface ProjectProvider {
 	id: string;
 	type: ProviderType;
+	providerCatalogId?: string | null;
+	provider?: ProviderCatalog | null;
 	config: Record<string, unknown>;
 	isActive: boolean;
 	createdAt: string;
+}
+
+interface ProviderCredentialField {
+	key: string;
+	label: string;
+	type: "secret" | "text";
+	required: boolean;
+	placeholder?: string;
+}
+
+interface ProviderCatalog {
+	id: string;
+	slug: string;
+	name: string;
+	description: string;
+	logoAsset: string;
+	category: ProviderCategory;
+	capabilities: ProviderCapability[];
+	credentialFields: ProviderCredentialField[];
+	adapterType?: ProviderType | null;
+	status: ProviderCatalogStatus;
+	sortOrder: number;
 }
 
 interface WebhookEndpoint {
@@ -231,6 +276,9 @@ interface UserProvider {
 export {
 	ProjectApiKeyScope,
 	ProviderType,
+	ProviderCatalogStatus,
+	ProviderCategory,
+	ProviderCapability,
 	RoutingStrategy,
 	TransactionType,
 	WalletProviderAction,
@@ -247,6 +295,8 @@ export type {
 	Project,
 	ProjectApiKey,
 	ProjectProvider,
+	ProviderCredentialField,
+	ProviderCatalog,
 	RegisterPayload,
 	Transaction,
 	TransferWalletPayload,
