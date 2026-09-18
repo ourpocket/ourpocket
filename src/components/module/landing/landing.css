@@ -357,6 +357,7 @@ body {
 }
 .provider-strip > p {
   margin: 0 0 var(--space-lg);
+  padding-inline: var(--space-lg);
   text-align: center;
   color: var(--color-subtle);
   font-size: var(--text-sm);
@@ -384,15 +385,7 @@ body {
   filter: brightness(0) invert(1);
   opacity: 0.8;
 }
-.provider-logo:has(b) img {
-  width: 1.75rem;
-  height: 1.75rem;
-}
-.provider-logo b {
-  color: var(--color-text);
-  font-size: var(--text-sm);
-  font-weight: 700;
-}
+
 .provider-list span:last-child {
   border-inline-end: var(--rule-thin) solid var(--color-rule);
 }
@@ -785,8 +778,8 @@ body {
   .provider-list {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-  .provider-list span:nth-child(4) {
-    border-inline-start: var(--rule-thin) solid var(--color-rule);
+  .provider-list span:nth-child(3n) {
+    border-inline-end: var(--rule-thin) solid var(--color-rule);
   }
   .workflow-layout {
     grid-template-columns: minmax(0, 1fr);
@@ -859,8 +852,11 @@ body {
     width: calc(100% - var(--space-lg));
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .provider-list span:nth-child(odd) {
-    border-inline-start: var(--rule-thin) solid var(--color-rule);
+  .provider-list span:nth-child(3n) {
+    border-inline-end: 0;
+  }
+  .provider-list span:nth-child(even) {
+    border-inline-end: var(--rule-thin) solid var(--color-rule);
   }
   .landing-section,
   .workflow-section {
