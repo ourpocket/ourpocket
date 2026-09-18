@@ -1,62 +1,33 @@
 import { ApiError } from "@/services/api-client";
 import type { PlatformAccount } from "@/services/types";
-import {
-	Outlet,
-	RouterProvider,
-	createMemoryHistory,
-	createRootRoute,
-	createRoute,
-	createRouter,
-} from "@tanstack/react-router";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { CreateWorkspaceDialog } from "./create-workspace-dialog";
+import { WorkspaceSetupForm } from "./workspace";
 
-interface RenderDialogOptions {
+interface RenderFormOptions {
 	createWorkspace?: (input: { name: string; companyName?: string }) => Promise<PlatformAccount>;
-	onCreated?: (platformAccount: PlatformAccount) => void;
+	onCreated?: () => Promise<void>;
 	onConflict?: () => Promise<void>;
 }
 
-const noOpConflict = async () => {};
-
-async function renderDialog({
+function renderWorkspaceForm({
 	createWorkspace = vi.fn(),
-	onCreated = vi.fn(),
-	onConflict = noOpConflict,
-}: RenderDialogOptions = {}) {
-	const rootRoute = createRootRoute({
-		component: Outlet,
-	});
-
-	const dialogRoute = createRoute({
-		getParentRoute: () => rootRoute,
-		path: "/",
-		component: () => (
-			<CreateWorkspaceDialog
-				open
-				createWorkspace={createWorkspace}
-				onCreated={onCreated}
-				onConflict={onConflict}
-			/>
-		),
-	});
-
-	const router = createRouter({
-		routeTree: rootRoute.addChildren([dialogRoute]),
-		history: createMemoryHistory({ initialEntries: ["/"] }),
-	});
-
-	render(<RouterProvider router={router} />);
-	await act(async () => {
-		await router.load();
-	});
+	onCreated = async () => {},
+	onConflict = async () => {},
+}: RenderFormOptions = {}) {
+	render(
+		<WorkspaceSetupForm
+			createWorkspace={createWorkspace}
+			onCreated={onCreated}
+			onConflict={onConflict}
+		/>,
+	);
 
 	return { createWorkspace, onCreated, onConflict };
 }
 
-describe("CreateWorkspaceDialog", () => {
+describe("WorkspaceSetupForm", () => {
 	const platformAccount = {
 		id: "workspace-id",
 		name: "Acme Payments",
@@ -64,9 +35,9 @@ describe("CreateWorkspaceDialog", () => {
 		createdAt: "2026-09-18T00:00:00.000Z",
 	};
 
-	it("requires a workspace name before creating an account", async () => {
+	it("requires a workspace name before creating an account", () => {
 		const createWorkspace = vi.fn();
-		await renderDialog({ createWorkspace });
+		renderWorkspaceForm({ createWorkspace });
 
 		fireEvent.submit(screen.getByRole("button", { name: "Create workspace" }).closest("form")!);
 
@@ -74,10 +45,11 @@ describe("CreateWorkspaceDialog", () => {
 		expect(createWorkspace).not.toHaveBeenCalled();
 	});
 
-	it("creates the workspace and returns it to the dashboard", async () => {
+	it("creates the workspace and continues to the dashboard", async () => {
 		const user = userEvent.setup();
 		const createWorkspace = vi.fn().mockResolvedValue(platformAccount);
-		const { onCreated } = await renderDialog({ createWorkspace });
+		const onCreated = vi.fn().mockResolvedValue(undefined);
+		renderWorkspaceForm({ createWorkspace, onCreated });
 
 		await user.type(screen.getByLabelText("Workspace name"), platformAccount.name);
 		await user.type(screen.getByLabelText(/Company name/), platformAccount.companyName);
@@ -88,19 +60,19 @@ describe("CreateWorkspaceDialog", () => {
 				name: platformAccount.name,
 				companyName: platformAccount.companyName,
 			});
-			expect(onCreated).toHaveBeenCalledWith(platformAccount);
+			expect(onCreated).toHaveBeenCalledOnce();
 		});
 	});
 
-	it("refetches the account after a concurrent creation conflict", async () => {
+	it("rechecks the workspace after a concurrent creation conflict", async () => {
 		const user = userEvent.setup();
-		const onConflict = vi.fn().mockResolvedValue(undefined);
 
 		const createWorkspace = vi
 			.fn()
 			.mockRejectedValue(new ApiError("Platform account already exists for user", 409));
 
-		await renderDialog({ createWorkspace, onConflict });
+		const onConflict = vi.fn().mockResolvedValue(undefined);
+		renderWorkspaceForm({ createWorkspace, onConflict });
 
 		await user.type(screen.getByLabelText("Workspace name"), platformAccount.name);
 		fireEvent.submit(screen.getByRole("button", { name: "Create workspace" }).closest("form")!);
@@ -108,5 +80,21 @@ describe("CreateWorkspaceDialog", () => {
 		await waitFor(() => {
 			expect(onConflict).toHaveBeenCalledOnce();
 		});
+	});
+
+	it("shows an actionable error when workspace creation fails", async () => {
+		const user = userEvent.setup();
+		const createWorkspace = vi.fn().mockRejectedValue(new Error("Service temporarily unavailable"));
+		renderWorkspaceForm({ createWorkspace });
+
+		await user.type(screen.getByLabelText("Workspace name"), platformAccount.name);
+		fireEvent.submit(screen.getByRole("button", { name: "Create workspace" }).closest("form")!);
+
+		await waitFor(() => {
+			expect(screen.getByRole("alert").textContent).toBe("Service temporarily unavailable");
+		});
+		expect(screen.getByRole("button", { name: "Create workspace" }).hasAttribute("disabled")).toBe(
+			false,
+		);
 	});
 });

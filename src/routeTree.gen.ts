@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
+import { Route as OnboardingWorkspaceRouteImport } from './routes/onboarding/workspace'
 import { Route as OnboardingWelcomeRouteImport } from './routes/onboarding/welcome'
 import { Route as DashboardWebhooksRouteImport } from './routes/dashboard/webhooks'
 import { Route as DashboardWalletsRouteImport } from './routes/dashboard/wallets'
@@ -32,6 +33,11 @@ const IndexRoute = IndexRouteImport.update({
 const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/dashboard/',
   path: '/dashboard/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingWorkspaceRoute = OnboardingWorkspaceRouteImport.update({
+  id: '/onboarding/workspace',
+  path: '/onboarding/workspace',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingWelcomeRoute = OnboardingWelcomeRouteImport.update({
@@ -110,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/wallets': typeof DashboardWalletsRoute
   '/dashboard/webhooks': typeof DashboardWebhooksRoute
   '/onboarding/welcome': typeof OnboardingWelcomeRoute
+  '/onboarding/workspace': typeof OnboardingWorkspaceRoute
   '/dashboard': typeof DashboardIndexRoute
 }
 export interface FileRoutesByTo {
@@ -126,6 +133,7 @@ export interface FileRoutesByTo {
   '/dashboard/wallets': typeof DashboardWalletsRoute
   '/dashboard/webhooks': typeof DashboardWebhooksRoute
   '/onboarding/welcome': typeof OnboardingWelcomeRoute
+  '/onboarding/workspace': typeof OnboardingWorkspaceRoute
   '/dashboard': typeof DashboardIndexRoute
 }
 export interface FileRoutesById {
@@ -143,6 +151,7 @@ export interface FileRoutesById {
   '/dashboard/wallets': typeof DashboardWalletsRoute
   '/dashboard/webhooks': typeof DashboardWebhooksRoute
   '/onboarding/welcome': typeof OnboardingWelcomeRoute
+  '/onboarding/workspace': typeof OnboardingWorkspaceRoute
   '/dashboard/': typeof DashboardIndexRoute
 }
 export interface FileRouteTypes {
@@ -161,6 +170,7 @@ export interface FileRouteTypes {
     | '/dashboard/wallets'
     | '/dashboard/webhooks'
     | '/onboarding/welcome'
+    | '/onboarding/workspace'
     | '/dashboard'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -177,6 +187,7 @@ export interface FileRouteTypes {
     | '/dashboard/wallets'
     | '/dashboard/webhooks'
     | '/onboarding/welcome'
+    | '/onboarding/workspace'
     | '/dashboard'
   id:
     | '__root__'
@@ -193,6 +204,7 @@ export interface FileRouteTypes {
     | '/dashboard/wallets'
     | '/dashboard/webhooks'
     | '/onboarding/welcome'
+    | '/onboarding/workspace'
     | '/dashboard/'
   fileRoutesById: FileRoutesById
 }
@@ -210,6 +222,7 @@ export interface RootRouteChildren {
   DashboardWalletsRoute: typeof DashboardWalletsRoute
   DashboardWebhooksRoute: typeof DashboardWebhooksRoute
   OnboardingWelcomeRoute: typeof OnboardingWelcomeRoute
+  OnboardingWorkspaceRoute: typeof OnboardingWorkspaceRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
 }
 
@@ -227,6 +240,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/workspace': {
+      id: '/onboarding/workspace'
+      path: '/onboarding/workspace'
+      fullPath: '/onboarding/workspace'
+      preLoaderRoute: typeof OnboardingWorkspaceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding/welcome': {
@@ -330,6 +350,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardWalletsRoute: DashboardWalletsRoute,
   DashboardWebhooksRoute: DashboardWebhooksRoute,
   OnboardingWelcomeRoute: OnboardingWelcomeRoute,
+  OnboardingWorkspaceRoute: OnboardingWorkspaceRoute,
   DashboardIndexRoute: DashboardIndexRoute,
 }
 export const routeTree = rootRouteImport

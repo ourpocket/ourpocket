@@ -2,16 +2,16 @@ import {
 	PlatformAccountContext,
 	type PlatformAccountContextValue,
 } from "@/components/layouts/platform-account-context";
-import { CreateWorkspaceDialog } from "@/components/module/dashboard/create-workspace-dialog";
 import DashboardHeader from "@/components/module/dashboard/header.tsx";
 import PageInfo from "@/components/module/dashboard/page-info.tsx";
 import DashboardSidebar from "@/components/module/dashboard/sidebar";
 import { Button } from "@/components/ui/button";
 import { accountMenuItems, mainMenuItems, supportMenuItems } from "@/config/sidebar";
 import { useProjects } from "@/hooks/use-projects";
+import { getSafeDashboardReturnPath } from "@/lib/onboarding";
 import { clearStoredProjectId, getAuthToken, getStoredProjectId } from "@/lib/session";
 import { ApiError } from "@/services/api-client";
-import { createPlatformAccount, getMyPlatformAccount } from "@/services/platform-account.service";
+import { getMyPlatformAccount } from "@/services/platform-account.service";
 import type { PlatformAccount } from "@/services/types";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { AlertCircle, LoaderCircle } from "lucide-react";
@@ -73,6 +73,18 @@ const DashboardLayout = ({ children, title, description, actionTab }: Props) => 
 
 		void loadPlatformAccount();
 	}, [loadPlatformAccount, navigate]);
+
+	useEffect(() => {
+		if (platformAccountStatus !== "missing") {
+			return;
+		}
+
+		void navigate({
+			to: "/onboarding/workspace",
+			search: { returnTo: getSafeDashboardReturnPath(location.pathname) },
+			replace: true,
+		});
+	}, [location.pathname, navigate, platformAccountStatus]);
 
 	useEffect(() => {
 		if (platformAccountStatus !== "ready") {
@@ -152,6 +164,10 @@ const DashboardLayout = ({ children, title, description, actionTab }: Props) => 
 			);
 		}
 
+		if (platformAccountStatus === "missing") {
+			return <p className="text-sm text-gray-500">Opening workspace setup…</p>;
+		}
+
 		if (!platformAccountContext) {
 			return null;
 		}
@@ -182,16 +198,6 @@ const DashboardLayout = ({ children, title, description, actionTab }: Props) => 
 					</div>
 				</div>
 			</main>
-
-			<CreateWorkspaceDialog
-				open={platformAccountStatus === "missing"}
-				createWorkspace={createPlatformAccount}
-				onCreated={(account) => {
-					setPlatformAccount(account);
-					setPlatformAccountStatus("ready");
-				}}
-				onConflict={loadPlatformAccount}
-			/>
 		</div>
 	);
 };
