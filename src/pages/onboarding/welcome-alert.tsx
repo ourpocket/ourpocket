@@ -3,7 +3,7 @@ import AuthLayout from "@/components/layouts/auth-layout";
 const WelcomeAlert = () => {
 	return (
 		<AuthLayout
-			icon="/img/envelope.svg"
+			icon={<img width={28} height={28} alt="" src="/img/envelope.svg" />}
 			title="You’ve got mail!"
 			isCentered
 			description={`
@@ -14,4 +14,5 @@ const WelcomeAlert = () => {
 		</AuthLayout>
 	);
 };
+
 export default WelcomeAlert;

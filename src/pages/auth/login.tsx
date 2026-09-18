@@ -23,6 +23,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 const Login = () => {
 	const navigate = useNavigate();
 	const { login } = useAuth();
+
 	const form = useForm<LoginFormValues>({
 		defaultValues: {
 			email: "",
@@ -45,26 +46,20 @@ const Login = () => {
 
 	return (
 		<AuthLayout
-			title="Log in to your account"
-			description="Welcome back! Please enter your details to access your account."
-			isCentered
+			title="Sign in to OurPocket"
+			description="Access your projects, wallet providers, and transaction infrastructure."
 		>
-			<div className="flex flex-col w-full space-y-6">
+			<div className="w-full">
 				<Form {...form}>
-					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+					<form onSubmit={form.handleSubmit(onSubmit)}>
 						<FormField
 							control={form.control}
 							name="email"
 							render={({ field }) => (
 								<FormItem className="space-y-1.5">
-									<FormLabel className="text-sm font-medium text-gray-200">Email Address</FormLabel>
+									<FormLabel>Email address</FormLabel>
 									<FormControl>
-										<Input
-											type="email"
-											placeholder="e.g@example@gmail.com"
-											className="bg-[#1C1C1C] border-[#2D2D2D] text-white h-11"
-											{...field}
-										/>
+										<Input type="email" placeholder="name@company.com" {...field} />
 									</FormControl>
 									<FormMessage className="text-[13px]" />
 								</FormItem>
@@ -72,7 +67,7 @@ const Login = () => {
 						/>
 
 						<div className="space-y-2">
-							<FormLabel className="text-sm font-medium text-gray-200">Password</FormLabel>
+							<FormLabel>Password</FormLabel>
 
 							<FormField
 								control={form.control}
@@ -80,12 +75,7 @@ const Login = () => {
 								render={({ field }) => (
 									<FormItem>
 										<FormControl>
-											<Input
-												type="password"
-												placeholder="Password (Min. Of 8 Characters)"
-												className="bg-[#1C1C1C] border-[#2D2D2D] text-white h-11"
-												{...field}
-											/>
+											<Input type="password" placeholder="Enter your password" {...field} />
 										</FormControl>
 										<FormMessage className="text-[13px]" />
 									</FormItem>
@@ -94,16 +84,25 @@ const Login = () => {
 						</div>
 
 						<Button type="submit" className={"w-full"} disabled={form.formState.isSubmitting}>
-							{form.formState.isSubmitting ? "Signing in..." : "Sign In"}
+							{form.formState.isSubmitting ? "Signing in…" : "Sign in"}
 						</Button>
-						<div className="flex justify-center gap-3 text-sm">
-							<Link to="/auth/forgot-password" className="text-muted-foreground hover:text-primary">
+						<div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-3 border-t border-[#2d2d2d] pt-5 text-sm">
+							<Link
+								to="/auth/forgot-password"
+								className="whitespace-nowrap text-zinc-500 transition-colors hover:text-white"
+							>
 								Forgot password?
 							</Link>
-							<Link to="/auth/verify-email" className="text-muted-foreground hover:text-primary">
+							<Link
+								to="/auth/verify-email"
+								className="whitespace-nowrap text-zinc-500 transition-colors hover:text-white"
+							>
 								Verify email
 							</Link>
-							<Link to="/auth/register" className="text-muted-foreground hover:text-primary">
+							<Link
+								to="/auth/register"
+								className="whitespace-nowrap text-zinc-500 transition-colors hover:text-white"
+							>
 								Create an account
 							</Link>
 						</div>

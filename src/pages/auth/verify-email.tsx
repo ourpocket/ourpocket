@@ -23,6 +23,7 @@ const VerifyEmail = () => {
 	const handleRequest = async () => {
 		if (!email) {
 			toast.error("Email is required");
+
 			return;
 		}
 
@@ -33,15 +34,14 @@ const VerifyEmail = () => {
 	return (
 		<AuthLayout
 			title="Verify your email"
-			description="Enter the verification token sent to your email."
-			isCentered
+			description="Enter your email address and the verification token we sent you."
 		>
-			<form onSubmit={handleVerify} className="space-y-4">
+			<form onSubmit={handleVerify}>
 				<Input
 					value={email}
 					onChange={(event) => setEmail(event.target.value)}
 					type="email"
-					placeholder="name@example.com"
+					placeholder="name@company.com"
 					required
 				/>
 				<Input
@@ -51,13 +51,21 @@ const VerifyEmail = () => {
 					required
 				/>
 				<Button type="submit" className="w-full">
-					Verify Email
+					Verify email
 				</Button>
-				<Button type="button" className="w-full bg-gray-700/20" onClick={handleRequest}>
-					Resend Verification Email
+				<Button
+					type="button"
+					variant="outline"
+					className="h-12 w-full border-[#343434] bg-transparent text-zinc-300 shadow-none hover:bg-[#1c1c1c] hover:text-white"
+					onClick={handleRequest}
+				>
+					Resend verification email
 				</Button>
-				<div className="text-center">
-					<Link to="/auth/login" className="text-sm text-muted-foreground hover:text-primary">
+				<div className="border-t border-[#2d2d2d] pt-5 text-center">
+					<Link
+						to="/auth/login"
+						className="whitespace-nowrap text-sm text-zinc-500 transition-colors hover:text-white"
+					>
 						Back to login
 					</Link>
 				</div>

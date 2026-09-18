@@ -1,0 +1,8 @@
+{
+  "date": "2026-09-11",
+  "framework": "React 19 + Vite 6 + TanStack Router",
+  "font": "Outfit",
+  "palette": "warm charcoal + orange",
+  "motion": "GSAP installed",
+  "spacing": "Tailwind plus page-scoped CSS"
+}

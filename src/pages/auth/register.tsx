@@ -23,6 +23,7 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 const Register = () => {
 	const navigate = useNavigate();
 	const { register } = useAuth();
+
 	const form = useForm<RegisterFormValues>({
 		defaultValues: {
 			fullName: "",
@@ -57,13 +58,12 @@ const Register = () => {
 
 	return (
 		<AuthLayout
-			title="Let's get started"
-			description="Create your account to start managing your finances effectively."
-			isCentered
+			title="Create your account"
+			description="Set up your workspace and start building with unified wallet infrastructure."
 		>
-			<div className="flex flex-col space-y-6 w-full max-w-md mx-auto">
+			<div className="w-full">
 				<Form {...form}>
-					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+					<form onSubmit={form.handleSubmit(onSubmit)}>
 						<FormField
 							control={form.control}
 							name="fullName"
@@ -71,7 +71,7 @@ const Register = () => {
 								<FormItem>
 									<FormLabel>Full Name</FormLabel>
 									<FormControl>
-										<Input type="text" placeholder="John Doe" {...field} />
+										<Input type="text" placeholder="Your full name" {...field} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -85,7 +85,7 @@ const Register = () => {
 								<FormItem>
 									<FormLabel>Company Name</FormLabel>
 									<FormControl>
-										<Input type="text" placeholder="Acme Marketplace" {...field} />
+										<Input type="text" placeholder="Your company" {...field} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -160,7 +160,7 @@ const Register = () => {
 												onCheckedChange={(checked) => field.onChange(Boolean(checked))}
 											/>
 										</FormControl>
-										<FormLabel className="text-sm text-muted-foreground">
+										<FormLabel className="text-sm font-normal text-zinc-400">
 											I agree to the terms and privacy policy
 										</FormLabel>
 									</div>
@@ -170,13 +170,16 @@ const Register = () => {
 						/>
 
 						<Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-							{form.formState.isSubmitting ? "Creating account..." : "Create account"}
+							{form.formState.isSubmitting ? "Creating account…" : "Create account"}
 						</Button>
 					</form>
 				</Form>
 
-				<div className="text-center">
-					<Link to="/auth/login" className="text-sm text-muted-foreground hover:text-primary">
+				<div className="border-t border-[#2d2d2d] pt-5 text-center">
+					<Link
+						to="/auth/login"
+						className="whitespace-nowrap text-sm text-zinc-500 transition-colors hover:text-white"
+					>
 						Already have an account? Sign in
 					</Link>
 				</div>
