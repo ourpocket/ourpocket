@@ -29,6 +29,8 @@ const API_ROUTES = {
 			list: (projectId: string) => `/projects/${projectId}/providers`,
 			configure: (projectId: string) => `/projects/${projectId}/providers`,
 			connect: (projectId: string) => `/projects/${projectId}/providers/connect`,
+			overview: (projectId: string, provider: string) =>
+				`/projects/${projectId}/providers/${provider}/overview`,
 		},
 		webhooks: {
 			list: (projectId: string) => `/projects/${projectId}/webhooks`,
