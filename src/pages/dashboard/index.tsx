@@ -1,4 +1,5 @@
 "use client";
+
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useCurrentProject } from "@/hooks/use-current-project";
 import { useUsageMetrics } from "@/hooks/use-usage-metrics";
@@ -31,15 +32,15 @@ const emptyMetrics: UsageMetrics = {
 
 const StatCard = ({ title, value, Icon }: StatCardProps) => {
 	return (
-		<Card className="shadow-md hover:shadow-lg transition-shadow duration-300 border-none bg-card ">
-			<CardContent className="p-6 py-2">
-				<div className="flex items-center gap-3 mb-4">
-					<Icon size={24} className="text-white" variant="Bulk" />
-					<p className="text-sm text-gray-500 font-medium">{title}</p>
+		<Card className="gap-0 rounded-xl border-white/[0.08] bg-[#1b1b1b] py-0 shadow-none">
+			<CardContent className="p-5">
+				<div className="mb-5 flex items-center justify-between">
+					<p className="text-xs font-medium text-white/45">{title}</p>
+					<div className="flex size-8 items-center justify-center rounded-lg bg-orange-400/[0.08] text-orange-300">
+						<Icon size={17} variant="Bulk" />
+					</div>
 				</div>
-				<div className="space-y-2">
-					<p className="text-2xl font-bold text-white">{value}</p>
-				</div>
+				<p className="text-2xl font-semibold tracking-[-0.02em] text-white">{value}</p>
 			</CardContent>
 		</Card>
 	);
@@ -54,15 +55,15 @@ const ChartCard = ({
 	subtitle: string;
 	children: ReactNode;
 }) => (
-	<Card className="shadow-md hover:shadow-lg transition-shadow duration-300 border-none ">
-		<CardHeader className="pb-4">
+	<Card className="gap-0 rounded-xl border-white/[0.08] bg-[#1b1b1b] py-0 shadow-none">
+		<CardHeader className="border-b border-white/[0.07] px-5 py-4">
 			<div>
-				<h3 className="text-lg font-semibold text-white ">{title}</h3>
-				<p className="text-sm text-gray-500">{subtitle}</p>
+				<h3 className="text-sm font-semibold text-white">{title}</h3>
+				<p className="mt-1 text-xs text-white/40">{subtitle}</p>
 			</div>
 		</CardHeader>
-		<CardContent>
-			<div className="h-80">{children}</div>
+		<CardContent className="p-5">
+			<div className="h-64 sm:h-72">{children}</div>
 		</CardContent>
 	</Card>
 );
@@ -95,6 +96,7 @@ export default function DashboardOverview() {
 
 			try {
 				const response = await getUsageMetrics(project.id);
+
 				if (isMounted) {
 					setMetrics(response);
 				}
@@ -135,70 +137,65 @@ export default function DashboardOverview() {
 	];
 
 	return (
-		<div className="p-6 min-h-screen">
-			<div className="max-w-7xl mx-auto">
-				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-					{stats.map((stat) => (
-						<StatCard key={stat.title} {...stat} />
-					))}
-				</div>
+		<div className="space-y-6">
+			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+				{stats.map((stat) => (
+					<StatCard key={stat.title} {...stat} />
+				))}
+			</div>
 
-				{isLoading && <p className="mb-4 text-sm text-gray-500">Loading dashboard...</p>}
+			{isLoading && <p className="text-sm text-white/40">Loading dashboard…</p>}
 
-				<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-					<ChartCard title="Transaction Volume" subtitle="Monthly transaction volume and count">
-						<ResponsiveContainer width="100%" height="100%">
-							<BarChart
-								data={metrics.monthlyTransactionVolume}
-								margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-							>
-								<XAxis
-									dataKey="month"
-									axisLine={false}
-									tickLine={false}
-									tick={{ fontSize: 12, fill: "#6B7280" }}
-								/>
-								<YAxis
-									axisLine={false}
-									tickLine={false}
-									tick={{ fontSize: 12, fill: "#6B7280" }}
-									tickFormatter={(value) => `${value / 1000000}M`}
-								/>
-								<Bar dataKey="value" fill="#EA580C" radius={[4, 4, 0, 0]} />
-							</BarChart>
-						</ResponsiveContainer>
-					</ChartCard>
+			<div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+				<ChartCard title="Transaction Volume" subtitle="Monthly transaction volume and count">
+					<ResponsiveContainer width="100%" height="100%">
+						<BarChart
+							data={metrics.monthlyTransactionVolume}
+							margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+						>
+							<XAxis
+								dataKey="month"
+								axisLine={false}
+								tickLine={false}
+								tick={{ fontSize: 12, fill: "#6B7280" }}
+							/>
+							<YAxis
+								axisLine={false}
+								tickLine={false}
+								tick={{ fontSize: 12, fill: "#6B7280" }}
+								tickFormatter={(value) => `${value / 1000000}M`}
+							/>
+							<Bar dataKey="value" fill="#fb8a2e" radius={[5, 5, 0, 0]} />
+						</BarChart>
+					</ResponsiveContainer>
+				</ChartCard>
 
-					<ChartCard title="API Usage" subtitle="Daily API requests over the past week">
-						<ResponsiveContainer width="100%" height="100%">
-							<LineChart
-								data={metrics.apiUsage}
-								margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-							>
-								<XAxis
-									dataKey="day"
-									axisLine={false}
-									tickLine={false}
-									tick={{ fontSize: 12, fill: "#6B7280" }}
-								/>
-								<YAxis
-									axisLine={false}
-									tickLine={false}
-									tick={{ fontSize: 12, fill: "#6B7280" }}
-									tickFormatter={(value) => `${value / 1000}K`}
-								/>
-								<Line
-									type="monotone"
-									dataKey="requests"
-									stroke="orange"
-									strokeWidth={3}
-									dot={{ fill: "orange", strokeWidth: 2, r: 4 }}
-									activeDot={{ r: 6, fill: "orange" }}
-								/>
-							</LineChart>
-						</ResponsiveContainer>
-					</ChartCard>
-				</div>
+				<ChartCard title="API Usage" subtitle="Daily API requests over the past week">
+					<ResponsiveContainer width="100%" height="100%">
+						<LineChart data={metrics.apiUsage} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+							<XAxis
+								dataKey="day"
+								axisLine={false}
+								tickLine={false}
+								tick={{ fontSize: 12, fill: "#6B7280" }}
+							/>
+							<YAxis
+								axisLine={false}
+								tickLine={false}
+								tick={{ fontSize: 12, fill: "#6B7280" }}
+								tickFormatter={(value) => `${value / 1000}K`}
+							/>
+							<Line
+								type="monotone"
+								dataKey="requests"
+								stroke="#fb8a2e"
+								strokeWidth={2}
+								dot={{ fill: "#fb8a2e", strokeWidth: 0, r: 3 }}
+								activeDot={{ r: 5, fill: "#fb8a2e" }}
+							/>
+						</LineChart>
+					</ResponsiveContainer>
+				</ChartCard>
 			</div>
 		</div>
 	);

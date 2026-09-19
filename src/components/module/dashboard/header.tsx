@@ -21,15 +21,23 @@ const DashboardHeader = () => {
 	};
 
 	return (
-		<div className="bg-card w-full h-16 px-4 sm:px-[3em] flex items-center">
-			<div className="container mx-auto  flex items-center justify-between">
-				<h3 className="font-semibold pl-12 lg:pl-0">Dashboard</h3>
+		<div className="flex h-16 w-full min-w-0 items-center border-b border-white/[0.07] bg-[#171717] px-4 sm:px-8">
+			<div className="mx-auto flex w-full min-w-0 max-w-[1440px] items-center justify-between gap-3">
+				<h3 className="min-w-0 truncate pl-12 text-sm font-medium text-white/70 lg:pl-0">
+					Developer console
+				</h3>
 
-				<div className="flex items-center gap-2 sm:gap-5 ">
+				<div className="flex shrink-0 items-center gap-2 sm:gap-3">
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
-							<Button variant="outline" className="bg-transparent border-red-500/20">
-								<small>{environment === "sandbox" ? "Sandbox" : "Production"}</small>
+							<Button
+								variant="outline"
+								className="h-8 border-white/[0.09] bg-white/[0.03] px-3 text-xs text-white/75 hover:bg-white/[0.07] hover:text-white"
+							>
+								<span
+									className={`size-1.5 rounded-full ${environment === "sandbox" ? "bg-orange-400" : "bg-emerald-400"}`}
+								/>
+								{environment === "sandbox" ? "Sandbox" : "Production"}
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent>
@@ -39,8 +47,8 @@ const DashboardHeader = () => {
 							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
-					<div className={"p-2 rounded-full bg-gray-600/10"}>
-						<Notification variant="Bulk" />
+					<div className="hidden size-8 items-center justify-center rounded-lg border border-white/[0.07] bg-white/[0.03] text-white/60 sm:flex">
+						<Notification size={17} variant="Bulk" />
 					</div>
 
 					<DropdownMenu>

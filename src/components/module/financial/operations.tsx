@@ -10,6 +10,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { SyntaxCode } from "@/components/ui/syntax-code";
 import {
 	Table,
 	TableBody,
@@ -29,6 +30,7 @@ import {
 	type RefundInput,
 	type Scenario,
 } from "@ourpocket/sdk";
+import { Braces } from "lucide-react";
 import { type FormEvent, useEffect, useState } from "react";
 
 const scenarioOptions: Scenario[] = [
@@ -49,10 +51,17 @@ function Fields({
 	value,
 	onChange,
 	type = "text",
-}: { label: string; value: string; onChange: (value: string) => void; type?: string }) {
+	className = "",
+}: {
+	label: string;
+	value: string;
+	onChange: (value: string) => void;
+	type?: string;
+	className?: string;
+}) {
 	return (
-		<div className="space-y-2">
-			<Label className="grid gap-2">
+		<div className={className}>
+			<Label className="grid gap-2 text-xs font-medium text-white/65">
 				{label}
 				<Input
 					aria-label={label}
@@ -206,9 +215,69 @@ export default function FinancialOperations({ wallets = false }: { wallets?: boo
 
 	const unavailable = wallets && environment === "production";
 
+	const endpoint = (() => {
+		if (operation === "payment") return "/payments";
+
+		if (operation === "refund") return "/refunds";
+
+		if (operation === "create_wallet") return "/sandbox/wallets";
+
+		if (operation === "transfer") return "/sandbox/transfers";
+
+		return `/sandbox/wallets/${resourceId || "{wallet_id}"}/${operation}`;
+	})();
+
+	const requestBody = (() => {
+		if (operation === "payment")
+			return {
+				customer: "{customer_id}",
+				amount,
+				currency,
+				provider,
+				scenario: environment === "sandbox" ? scenario : undefined,
+			};
+
+		if (operation === "refund")
+			return {
+				payment: resourceId || "{payment_id}",
+				amount,
+				scenario: environment === "sandbox" ? scenario : undefined,
+			};
+
+		if (operation === "create_wallet") return { currency };
+
+		if (operation === "transfer")
+			return {
+				fromWallet: resourceId || "{wallet_id}",
+				toWallet: destination || "{destination_wallet_id}",
+				amount,
+				currency,
+				scenario,
+			};
+
+		return { amount, currency, scenario };
+	})();
+
+	const requestPreview = `curl --request POST '${API_BASE_URL}${endpoint}' \\
+  --header 'Authorization: Bearer $OURPOCKET_${environment === "sandbox" ? "SANDBOX" : "LIVE"}_KEY' \\
+  --header 'Idempotency-Key: ${idempotencyKey}' \\
+  --header 'Content-Type: application/json' \\
+  --data '${JSON.stringify(requestBody, null, 2)}'`;
+
+	const resultPreview = result
+		? JSON.stringify(result, null, 2)
+		: JSON.stringify(
+				{
+					status: "ready",
+					message: "Run an operation or inspect a record below.",
+				},
+				null,
+				2,
+			);
+
 	return (
 		<div className="space-y-6">
-			<p className="text-sm text-gray-400">
+			<p className="max-w-3xl text-sm leading-6 text-white/45">
 				{unavailable
 					? "Production wallet infrastructure is not available yet. Switch to Sandbox to test fiat wallets and balances."
 					: environment === "sandbox"
@@ -223,10 +292,10 @@ export default function FinancialOperations({ wallets = false }: { wallets?: boo
 					{error}
 				</div>
 			)}
-			<div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+			<div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
 				<ModularCard title={wallets ? "Sandbox wallet operation" : "Financial operation"} content>
-					<form className="space-y-4" onSubmit={submit}>
-						<Label className="grid gap-2">
+					<form className="grid grid-cols-1 gap-4 sm:grid-cols-2" onSubmit={submit}>
+						<Label className="grid gap-2 text-xs font-medium text-white/65">
 							Operation
 							<Select
 								value={operation}
@@ -256,6 +325,7 @@ export default function FinancialOperations({ wallets = false }: { wallets?: boo
 							type="password"
 							value={apiKey}
 							onChange={setApiKey}
+							className="sm:col-span-2"
 						/>
 						{operation !== "create_wallet" && (
 							<Fields label="Amount (minor units)" value={amount} onChange={setAmount} />
@@ -264,7 +334,7 @@ export default function FinancialOperations({ wallets = false }: { wallets?: boo
 						{operation === "payment" && (
 							<>
 								<Fields label="Customer email" type="email" value={email} onChange={setEmail} />
-								<Label className="grid gap-2">
+								<Label className="grid gap-2 text-xs font-medium text-white/65">
 									Provider
 									<Select
 										value={provider}
@@ -281,7 +351,7 @@ export default function FinancialOperations({ wallets = false }: { wallets?: boo
 										</SelectContent>
 									</Select>
 								</Label>
-								<Label className="grid gap-2">
+								<Label className="grid gap-2 text-xs font-medium text-white/65 sm:col-span-2">
 									Checkout return URL
 									<Input
 										type="url"
@@ -304,7 +374,7 @@ export default function FinancialOperations({ wallets = false }: { wallets?: boo
 							<Fields label="Destination wallet ID" value={destination} onChange={setDestination} />
 						)}
 						{environment === "sandbox" && operation !== "create_wallet" && (
-							<Label className="grid gap-2">
+							<Label className="grid gap-2 text-xs font-medium text-white/65">
 								Simulation
 								<Select
 									value={scenario}
@@ -327,8 +397,13 @@ export default function FinancialOperations({ wallets = false }: { wallets?: boo
 								</Select>
 							</Label>
 						)}
-						<Fields label="Idempotency key" value={idempotencyKey} onChange={setIdempotencyKey} />
-						<div className="flex flex-wrap gap-3">
+						<Fields
+							label="Idempotency key"
+							value={idempotencyKey}
+							onChange={setIdempotencyKey}
+							className="sm:col-span-2"
+						/>
+						<div className="flex flex-wrap gap-3 border-t border-white/[0.07] pt-4 sm:col-span-2">
 							<Button type="submit" disabled={busy || unavailable || !project}>
 								{busy ? "Sending…" : "Run operation"}
 							</Button>
@@ -343,12 +418,21 @@ export default function FinancialOperations({ wallets = false }: { wallets?: boo
 						</div>
 					</form>
 				</ModularCard>
-				<ModularCard title="Response" content>
-					<pre className="max-h-[420px] overflow-auto rounded-md bg-black/30 p-4 text-xs text-gray-200">
-						{result
-							? JSON.stringify(result, null, 2)
-							: "Run an operation or inspect a record below."}
-					</pre>
+				<ModularCard title={environment === "sandbox" ? "Sandbox request" : "API request"} content>
+					<div className="space-y-4">
+						<SyntaxCode
+							code={requestPreview}
+							language="shellscript"
+							label="request.sh"
+							maxHeight="20rem"
+						/>
+						<SyntaxCode
+							code={resultPreview}
+							language="json"
+							label="response.json"
+							maxHeight="20rem"
+						/>
+					</div>
 					{result?.kind === "payment" && result.details.checkoutUrl && (
 						<a
 							className="mt-4 inline-block text-sm text-orange-400 underline"
@@ -361,14 +445,22 @@ export default function FinancialOperations({ wallets = false }: { wallets?: boo
 					)}
 				</ModularCard>
 			</div>
-			<ModularCard title={wallets ? "Wallets and transfers" : "Payments and refunds"} content>
+			<ModularCard
+				title={wallets ? "Wallets and transfers" : "Payments and refunds"}
+				action={<span className="text-xs font-normal text-white/40">{visible.length} records</span>}
+				content
+			>
 				{!wallets && (
-					<div className="mb-4 flex gap-2">
+					<div className="mb-5 flex gap-6 border-b border-white/[0.07]">
 						{["all", "payment", "refund"].map((value) => (
-							<Button
+							<button
+								type="button"
 								key={value}
-								size="sm"
-								variant={view === value ? "default" : "outline"}
+								className={`border-b-2 px-0 pb-3 text-sm transition-colors ${
+									view === value
+										? "border-orange-400 text-white"
+										: "border-transparent text-white/40 hover:text-white/70"
+								}`}
 								onClick={() => setView(value)}
 							>
 								{value === "all"
@@ -376,7 +468,7 @@ export default function FinancialOperations({ wallets = false }: { wallets?: boo
 									: value === "payment"
 										? "Payments"
 										: "Refunds"}
-							</Button>
+							</button>
 						))}
 					</div>
 				)}
@@ -466,9 +558,19 @@ export default function FinancialOperations({ wallets = false }: { wallets?: boo
 					</Table>
 				</div>
 				{visible.length === 0 && (
-					<p className="py-6 text-sm text-gray-400">
-						{loading ? "Loading operations…" : "No operations in this environment yet."}
-					</p>
+					<div className="flex min-h-56 flex-col items-center justify-center gap-3 py-8 text-center">
+						<div className="flex size-11 items-center justify-center rounded-xl border border-white/[0.07] bg-white/[0.025] text-white/25">
+							<Braces className="size-5" />
+						</div>
+						<p className="text-sm font-medium text-white/65">
+							{loading ? "Loading operations…" : "No operations yet"}
+						</p>
+						{!loading && (
+							<p className="max-w-sm text-xs leading-5 text-white/35">
+								Run your first operation above. It will appear here with its normalized status.
+							</p>
+						)}
+					</div>
 				)}
 			</ModularCard>
 		</div>

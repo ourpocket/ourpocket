@@ -27,6 +27,11 @@ code {
     source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
 
+.font-mono,
+.font-mono * {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace !important;
+}
+
 @theme inline {
   --primary-dark: var(--primary-dark);
   --primary: var(--primary);

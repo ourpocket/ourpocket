@@ -1,6 +1,7 @@
 import { LogoText } from "@/components/micro/logo";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { useEnvironment } from "@/lib/environment";
 import { cn } from "@/lib/utils";
 import { Link, useMatchRoute } from "@tanstack/react-router";
 import { ArrowDown2, Menu } from "iconsax-reactjs";
@@ -40,10 +41,10 @@ const SidebarSection = ({ items }: SidebarSectionProps) => (
 );
 
 const sidebarItemStyles = {
-	base: "flex items-center gap-x-3 rounded-lg text-sm font-medium transition-colors duration-200 ease-in-out text-white",
-	main: "px-4 py-2.5 hover:bg-sidebar-accent/10 ",
+	base: "flex items-center gap-x-3 rounded-lg text-sm font-medium transition-colors duration-150 ease-out text-white/65 hover:text-white",
+	main: "px-3 py-2.5 hover:bg-white/[0.045] ",
 	sub: "px-6 py-2 text-white/70 hover:bg-sidebar-accent/10 [&.active]:bg-sidebar-accent/10 [&.active]:text-white",
-	active: "[&.active]:bg-sidebar-accent/10 [&.active_icon]:font-bold",
+	active: "[&.active]:bg-white/[0.07] [&.active]:text-white [&.active_icon]:font-bold",
 };
 
 const SidebarItemLink = ({
@@ -59,6 +60,7 @@ const SidebarItemLink = ({
 }) => {
 	const matchRoute = useMatchRoute();
 	const isActive = matchRoute({ to: href });
+
 	return (
 		<Link to={href} preload="intent" className={cn(sidebarItemStyles.base, className)}>
 			<div className={cn("flex items-center", isActive && "active_icon")}>{icon}</div>
@@ -70,6 +72,7 @@ const SidebarItemLink = ({
 const SidebarItemComponent = ({ item }: { item: SidebarItem }) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const matchRoute = useMatchRoute();
+
 	const isActive = item.subItems
 		? item.subItems.some((subItem) => matchRoute({ to: subItem.href }))
 		: item.href
@@ -127,10 +130,10 @@ const SidebarItemComponent = ({ item }: { item: SidebarItem }) => {
 const sidebarStyles = {
 	toggleButton: "fixed left-4 top-4 z-50 lg:hidden",
 	aside:
-		"fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r bg-[var(--dark-evening)] transition-transform duration-200 ease-in-out lg:static",
-	header: "flex h-16 items-center justify-between border-b px-6",
+		"fixed inset-y-0 left-0 z-40 flex w-60 flex-col border-r border-white/[0.07] bg-[#151515] transition-transform duration-200 ease-in-out lg:static",
+	header: "flex h-16 items-center justify-between border-b border-white/[0.07] px-5",
 	content: "flex flex-1 flex-col",
-	sections: "flex-1 space-y-6 overflow-y-auto p-6",
+	sections: "flex-1 space-y-5 overflow-y-auto p-3",
 };
 
 const DashboardSidebar = ({
@@ -140,6 +143,8 @@ const DashboardSidebar = ({
 	isSidebarOpen,
 	setIsSidebarOpen,
 }: DashboardSidebarProps) => {
+	const environment = useEnvironment();
+
 	const sections = [
 		{ title: "MAIN MENU", items: mainMenuItems },
 		{ title: "ACCOUNT", items: accountMenuItems },
@@ -151,7 +156,7 @@ const DashboardSidebar = ({
 			<Button
 				variant="ghost"
 				size="icon"
-				className={sidebarStyles.toggleButton}
+				className={cn(sidebarStyles.toggleButton, environment === "sandbox" && "top-[3.25rem]")}
 				aria-label="Toggle navigation"
 				aria-expanded={isSidebarOpen}
 				onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -168,11 +173,11 @@ const DashboardSidebar = ({
 
 				<div className={sidebarStyles.content}>
 					<div className={sidebarStyles.sections}>
-						{sections
-							.filter((section) => section.items.length > 0)
-							.map((section) => (
+						{sections.map((section) =>
+							section.items.length > 0 ? (
 								<SidebarSection key={section.title} items={section.items} />
-							))}
+							) : null,
+						)}
 					</div>
 				</div>
 			</aside>
@@ -181,4 +186,5 @@ const DashboardSidebar = ({
 };
 
 export type { SidebarItem, DashboardSidebarProps };
+
 export default DashboardSidebar;

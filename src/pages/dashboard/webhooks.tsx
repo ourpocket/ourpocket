@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SyntaxCode } from "@/components/ui/syntax-code";
 import {
 	Table,
 	TableBody,
@@ -313,9 +314,11 @@ function WebhooksContent() {
 				</ModularCard>
 				{selected && (
 					<ModularCard title="Delivery response inspection" content>
-						<pre className="max-h-96 overflow-auto rounded-md bg-black/30 p-4 text-xs">
-							{JSON.stringify(selected, null, 2)}
-						</pre>
+						<SyntaxCode
+							code={JSON.stringify(selected, null, 2)}
+							language="json"
+							label="delivery.json"
+						/>
 					</ModularCard>
 				)}
 			</div>

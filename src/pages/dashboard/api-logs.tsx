@@ -1,6 +1,7 @@
 import DashboardLayout from "@/components/layouts/dashboard-layout";
 import { ModularCard } from "@/components/module/card";
 import { Button } from "@/components/ui/button";
+import { SyntaxCode } from "@/components/ui/syntax-code";
 import {
 	Table,
 	TableBody,
@@ -48,51 +49,55 @@ export default function ApiLogsPage() {
 			title="API Logs"
 			description="Trace application and provider requests. Logs are retained for seven days."
 		>
-			{error && (
-				<p role="alert" className="text-red-300">
-					{error}
-				</p>
-			)}
-			<ModularCard title="Requests" content>
-				<div className="overflow-x-auto">
-					<Table>
-						<TableHeader>
-							<TableRow>
-								{["Request ID", "Operation", "Source", "Created", "Action"].map((label) => (
-									<TableHead key={label}>{label}</TableHead>
-								))}
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{logs.map((log) => (
-								<TableRow key={log.id}>
-									<TableCell className="font-mono text-xs">{log.requestId}</TableCell>
-									<TableCell>{log.operation}</TableCell>
-									<TableCell>{log.source}</TableCell>
-									<TableCell>{new Date(log.createdAt).toLocaleString()}</TableCell>
-									<TableCell>
-										<Button size="sm" variant="outline" onClick={() => setSelected(log)}>
-											Inspect
-										</Button>
-									</TableCell>
-								</TableRow>
-							))}
-						</TableBody>
-					</Table>
-				</div>
-				{!logs.length && (
-					<p className="py-6 text-sm text-gray-400">
-						{loading ? "Loading requests…" : "No requests in this environment yet."}
+			<div className="space-y-6">
+				{error && (
+					<p role="alert" className="text-red-300">
+						{error}
 					</p>
 				)}
-			</ModularCard>
-			{selected && (
-				<ModularCard title="Request details" content>
-					<pre className="max-h-96 overflow-auto rounded-md bg-black/30 p-4 text-xs">
-						{JSON.stringify(selected, null, 2)}
-					</pre>
+				<ModularCard title="Requests" content>
+					<div className="overflow-x-auto">
+						<Table>
+							<TableHeader>
+								<TableRow>
+									{["Request ID", "Operation", "Source", "Created", "Action"].map((label) => (
+										<TableHead key={label}>{label}</TableHead>
+									))}
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{logs.map((log) => (
+									<TableRow key={log.id}>
+										<TableCell className="font-mono text-xs">{log.requestId}</TableCell>
+										<TableCell>{log.operation}</TableCell>
+										<TableCell>{log.source}</TableCell>
+										<TableCell>{new Date(log.createdAt).toLocaleString()}</TableCell>
+										<TableCell>
+											<Button size="sm" variant="outline" onClick={() => setSelected(log)}>
+												Inspect
+											</Button>
+										</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+					</div>
+					{!logs.length && (
+						<p className="py-6 text-sm text-gray-400">
+							{loading ? "Loading requests…" : "No requests in this environment yet."}
+						</p>
+					)}
 				</ModularCard>
-			)}
+				{selected && (
+					<ModularCard title="Request details" content>
+						<SyntaxCode
+							code={JSON.stringify(selected, null, 2)}
+							language="json"
+							label="request.json"
+						/>
+					</ModularCard>
+				)}
+			</div>
 		</DashboardLayout>
 	);
 }
