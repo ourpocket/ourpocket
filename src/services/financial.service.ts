@@ -18,7 +18,7 @@ export const deliverySchema = z.object({
 	eventId: z.uuid(),
 	requestId: z.uuid(),
 	webhookId: z.uuid(),
-	status: z.enum(["pending", "completed", "failed"]),
+	status: z.enum(["pending", "processing", "completed", "failed"]),
 	attempts: z.number(),
 	history: z.array(
 		z.object({
