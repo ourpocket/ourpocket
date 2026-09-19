@@ -1,5 +1,6 @@
 import { CodePane } from "@/components/module/landing/code-pane";
 import { Typography } from "@/components/ui/typography";
+import { isPrivateBeta } from "@/lib/beta-access";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 
@@ -16,9 +17,15 @@ export function LandingHero() {
 						decisions, and reconcile uncertain operations without rebuilding your stack.
 					</Typography>
 					<div className="hero-actions">
-						<Link className="landing-button landing-button-primary" to="/auth/register">
-							Get started <ArrowRight size={17} />
-						</Link>
+						{isPrivateBeta ? (
+							<a className="landing-button landing-button-primary" href="#beta">
+								Request beta access <ArrowRight size={17} />
+							</a>
+						) : (
+							<Link className="landing-button landing-button-primary" to="/auth/register">
+								Get started <ArrowRight size={17} />
+							</Link>
+						)}
 						<a
 							className="landing-button landing-button-secondary"
 							href="https://github.com/ourpocket/ourpocket"

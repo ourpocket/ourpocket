@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
+import { isPrivateBeta } from "@/lib/beta-access";
 import { setAuthToken } from "@/lib/session";
 import { loginSchema } from "@/schemas/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -99,12 +100,14 @@ const Login = () => {
 							>
 								Verify email
 							</Link>
-							<Link
-								to="/auth/register"
-								className="whitespace-nowrap text-zinc-500 transition-colors hover:text-white"
-							>
-								Create an account
-							</Link>
+							{!isPrivateBeta && (
+								<Link
+									to="/auth/register"
+									className="whitespace-nowrap text-zinc-500 transition-colors hover:text-white"
+								>
+									Create an account
+								</Link>
+							)}
 						</div>
 					</form>
 				</Form>

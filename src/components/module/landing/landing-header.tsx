@@ -1,4 +1,5 @@
 import { LogoText } from "@/components/micro/logo";
+import { isPrivateBeta } from "@/lib/beta-access";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, ChevronDown, Github, Menu, X } from "lucide-react";
 import { useState } from "react";
@@ -66,12 +67,21 @@ export function LandingHeader() {
 						<Link className="landing-sign-in" to="/auth/login">
 							Sign in
 						</Link>
-						<Link
-							className="landing-button landing-button-primary landing-button-small"
-							to="/auth/register"
-						>
-							Get started <ArrowRight size={15} />
-						</Link>
+						{isPrivateBeta ? (
+							<a
+								className="landing-button landing-button-primary landing-button-small"
+								href="/#beta"
+							>
+								Request beta access <ArrowRight size={15} />
+							</a>
+						) : (
+							<Link
+								className="landing-button landing-button-primary landing-button-small"
+								to="/auth/register"
+							>
+								Get started <ArrowRight size={15} />
+							</Link>
+						)}
 						<button
 							type="button"
 							className="landing-menu"

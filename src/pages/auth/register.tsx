@@ -10,7 +10,9 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Typography } from "@/components/ui/typography";
 import { useAuth } from "@/hooks/use-auth";
+import { isPrivateBeta } from "@/lib/beta-access";
 import { registerSchema } from "@/schemas/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useNavigate } from "@tanstack/react-router";
@@ -20,7 +22,7 @@ import type * as z from "zod";
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
-const Register = () => {
+function PublicRegister() {
 	const navigate = useNavigate();
 	const { register } = useAuth();
 
@@ -186,6 +188,34 @@ const Register = () => {
 			</div>
 		</AuthLayout>
 	);
-};
+}
+
+function PrivateBetaRegister() {
+	return (
+		<AuthLayout
+			title="Private beta"
+			description="OurPocket is currently onboarding accepted testers."
+		>
+			<div className="space-y-6 text-center">
+				<Typography className="text-zinc-400">
+					Request access and we will contact you when your beta seat is ready.
+				</Typography>
+				<Button asChild className="w-full">
+					<a href="/#beta">Request beta access</a>
+				</Button>
+				<Link
+					to="/auth/login"
+					className="block text-sm text-zinc-500 transition-colors hover:text-white"
+				>
+					Already accepted? Sign in
+				</Link>
+			</div>
+		</AuthLayout>
+	);
+}
+
+function Register() {
+	return isPrivateBeta ? <PrivateBetaRegister /> : <PublicRegister />;
+}
 
 export default Register;

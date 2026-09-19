@@ -1,5 +1,6 @@
 import { LogoText } from "@/components/micro/logo";
 import { Typography } from "@/components/ui/typography";
+import { isPrivateBeta } from "@/lib/beta-access";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Github } from "lucide-react";
 
@@ -16,9 +17,15 @@ export function DeveloperCta() {
 					your product can operate.
 				</Typography>
 				<div className="hero-actions">
-					<Link className="landing-button landing-button-light" to="/auth/register">
-						Start building free <ArrowRight size={17} />
-					</Link>
+					{isPrivateBeta ? (
+						<a className="landing-button landing-button-light" href="/#beta">
+							Request beta access <ArrowRight size={17} />
+						</a>
+					) : (
+						<Link className="landing-button landing-button-light" to="/auth/register">
+							Start building free <ArrowRight size={17} />
+						</Link>
+					)}
 					<a
 						className="landing-button landing-button-ghost"
 						href="https://github.com/ourpocket/ourpocket"
