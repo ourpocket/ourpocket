@@ -1,12 +1,5 @@
-import {
-	Card,
-	CardAction,
-	CardContent,
-	CardDescription,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Card, CardAction, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Typography } from "@/components/ui/typography";
 import type { ReactNode } from "react";
 
 interface ModularCardProps {
@@ -34,8 +27,16 @@ const ModularCard = ({
 		>
 			{(title || description || action) && (
 				<CardHeader className="border-b border-white/[0.07] px-5 py-4 text-white">
-					{title && <CardTitle>{title}</CardTitle>}
-					{description && <CardDescription>{description}</CardDescription>}
+					{title && (
+						<Typography as="div" variant="subheading">
+							{title}
+						</Typography>
+					)}
+					{description && (
+						<Typography as="div" variant="bodySmall">
+							{description}
+						</Typography>
+					)}
 					{action && <CardAction>{action}</CardAction>}
 				</CardHeader>
 			)}

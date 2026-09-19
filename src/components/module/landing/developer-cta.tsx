@@ -1,4 +1,5 @@
 import { LogoText } from "@/components/micro/logo";
+import { Typography } from "@/components/ui/typography";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Github } from "lucide-react";
 
@@ -8,12 +9,12 @@ export function DeveloperCta() {
 			<section id="developers" className="developer-cta landing-shell landing-reveal">
 				<div className="cta-orbit cta-orbit-one" />
 				<div className="cta-orbit cta-orbit-two" />
-				<p>Wallet infrastructure should accelerate your roadmap.</p>
-				<h2>
-					Build the financial layer
+				<Typography>Move from a safe sandbox to verified production payments.</Typography>
+				<Typography as="h2" variant="display">
+					Build the payment flow
 					<br />
-					your product deserves.
-				</h2>
+					your product can operate.
+				</Typography>
 				<div className="hero-actions">
 					<Link className="landing-button landing-button-light" to="/auth/register">
 						Start building free <ArrowRight size={17} />
@@ -31,12 +32,13 @@ export function DeveloperCta() {
 			<footer className="landing-footer landing-shell">
 				<div>
 					<LogoText size={142} className="landing-logo" />
-					<p>One API for programmable wallet infrastructure.</p>
+					<Typography>Sandbox operations and production checkout through one API.</Typography>
 				</div>
 				<nav aria-label="Footer navigation">
-					<a href="#infrastructure">Infrastructure</a>
-					<a href="#workflow">How it works</a>
+					<a href="/#infrastructure">Infrastructure</a>
+					<a href="/#workflow">How it works</a>
 					<a href="https://github.com/ourpocket/ourpocket">Documentation</a>
+					<Link to="/pricing">Pricing</Link>
 					<Link to="/auth/login">Sign in</Link>
 				</nav>
 				<div className="footer-bottom">

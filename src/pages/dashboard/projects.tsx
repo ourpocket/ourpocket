@@ -30,6 +30,7 @@ const CreateProjectForm = ({
 
 	const [createdProject, setCreatedProject] = useState<Project | null>(null);
 	const [sandboxKey, setSandboxKey] = useState<string | null>(null);
+
 	const [form, setForm] = useState({
 		name: "",
 		description: "",
@@ -195,6 +196,8 @@ const ProjectsContent = () => {
 					</Select>
 				</div>
 				<ModularModals
+					title="Create project"
+					description="Create a project for your financial infrastructure."
 					trigger={
 						<Button>
 							<Plus className="h-4 w-4" />
@@ -202,10 +205,6 @@ const ProjectsContent = () => {
 						</Button>
 					}
 				>
-					<div className="mb-4">
-						<h4 className="text-lg font-semibold text-white">Create project</h4>
-						<small className="text-white/70">Create a project for your wallet infrastructure</small>
-					</div>
 					<CreateProjectForm onCreated={handleCreated} />
 				</ModularModals>
 			</div>
@@ -218,6 +217,8 @@ const ProjectsContent = () => {
 						Start by creating a project for your wallet infrastructure.
 					</p>
 					<ModularModals
+						title="Create project"
+						description="Create a project for your financial infrastructure."
 						trigger={
 							<Button className="mt-5">
 								<Plus className="h-4 w-4" />
@@ -225,12 +226,6 @@ const ProjectsContent = () => {
 							</Button>
 						}
 					>
-						<div className="mb-4">
-							<h4 className="text-lg font-semibold text-white">Create project</h4>
-							<small className="text-white/70">
-								Create a project for your wallet infrastructure
-							</small>
-						</div>
 						<CreateProjectForm onCreated={handleCreated} />
 					</ModularModals>
 				</div>
