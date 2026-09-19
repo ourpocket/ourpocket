@@ -1,4 +1,5 @@
 import { useErrorHandler } from "@/hooks/use-error-handler";
+import { useEnvironment, useSelectedProjectId } from "@/lib/environment";
 import { getAuthToken } from "@/lib/session";
 import { getSelectedProject } from "@/services/project.service";
 import type { Project } from "@/services/types";
@@ -7,12 +8,16 @@ import { useEffect, useState } from "react";
 
 function useCurrentProject() {
 	const navigate = useNavigate();
+	const environment = useEnvironment();
+	const selectedProjectId = useSelectedProjectId();
 	const handleError = useErrorHandler();
 	const [project, setProject] = useState<Project | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 
 	useEffect(() => {
 		let isMounted = true;
+		setIsLoading(true);
+		setProject(null);
 
 		async function loadProject() {
 			if (!getAuthToken()) {
@@ -43,10 +48,11 @@ function useCurrentProject() {
 		return () => {
 			isMounted = false;
 		};
-	}, [handleError, navigate]);
+	}, [handleError, navigate, environment, selectedProjectId]);
 
 	return {
 		project,
+		environment,
 		isLoading,
 	};
 }

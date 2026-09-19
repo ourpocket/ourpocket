@@ -18,6 +18,7 @@ import { Route as DashboardWalletsRouteImport } from './routes/dashboard/wallets
 import { Route as DashboardWalletProvidersRouteImport } from './routes/dashboard/wallet-providers'
 import { Route as DashboardTransactionsRouteImport } from './routes/dashboard/transactions'
 import { Route as DashboardProjectsRouteImport } from './routes/dashboard/projects'
+import { Route as DashboardApiLogsRouteImport } from './routes/dashboard/api-logs'
 import { Route as DashboardApiKeyRouteImport } from './routes/dashboard/api-key'
 import { Route as AuthVerifyEmailRouteImport } from './routes/auth/verify-email'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
@@ -71,6 +72,11 @@ const DashboardProjectsRoute = DashboardProjectsRouteImport.update({
   path: '/dashboard/projects',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardApiLogsRoute = DashboardApiLogsRouteImport.update({
+  id: '/dashboard/api-logs',
+  path: '/dashboard/api-logs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardApiKeyRoute = DashboardApiKeyRouteImport.update({
   id: '/dashboard/api-key',
   path: '/dashboard/api-key',
@@ -110,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/verify-email': typeof AuthVerifyEmailRoute
   '/dashboard/api-key': typeof DashboardApiKeyRoute
+  '/dashboard/api-logs': typeof DashboardApiLogsRoute
   '/dashboard/projects': typeof DashboardProjectsRoute
   '/dashboard/transactions': typeof DashboardTransactionsRoute
   '/dashboard/wallet-providers': typeof DashboardWalletProvidersRoute
@@ -127,6 +134,7 @@ export interface FileRoutesByTo {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/verify-email': typeof AuthVerifyEmailRoute
   '/dashboard/api-key': typeof DashboardApiKeyRoute
+  '/dashboard/api-logs': typeof DashboardApiLogsRoute
   '/dashboard/projects': typeof DashboardProjectsRoute
   '/dashboard/transactions': typeof DashboardTransactionsRoute
   '/dashboard/wallet-providers': typeof DashboardWalletProvidersRoute
@@ -145,6 +153,7 @@ export interface FileRoutesById {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/verify-email': typeof AuthVerifyEmailRoute
   '/dashboard/api-key': typeof DashboardApiKeyRoute
+  '/dashboard/api-logs': typeof DashboardApiLogsRoute
   '/dashboard/projects': typeof DashboardProjectsRoute
   '/dashboard/transactions': typeof DashboardTransactionsRoute
   '/dashboard/wallet-providers': typeof DashboardWalletProvidersRoute
@@ -164,6 +173,7 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/auth/verify-email'
     | '/dashboard/api-key'
+    | '/dashboard/api-logs'
     | '/dashboard/projects'
     | '/dashboard/transactions'
     | '/dashboard/wallet-providers'
@@ -181,6 +191,7 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/auth/verify-email'
     | '/dashboard/api-key'
+    | '/dashboard/api-logs'
     | '/dashboard/projects'
     | '/dashboard/transactions'
     | '/dashboard/wallet-providers'
@@ -198,6 +209,7 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/auth/verify-email'
     | '/dashboard/api-key'
+    | '/dashboard/api-logs'
     | '/dashboard/projects'
     | '/dashboard/transactions'
     | '/dashboard/wallet-providers'
@@ -216,6 +228,7 @@ export interface RootRouteChildren {
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   AuthVerifyEmailRoute: typeof AuthVerifyEmailRoute
   DashboardApiKeyRoute: typeof DashboardApiKeyRoute
+  DashboardApiLogsRoute: typeof DashboardApiLogsRoute
   DashboardProjectsRoute: typeof DashboardProjectsRoute
   DashboardTransactionsRoute: typeof DashboardTransactionsRoute
   DashboardWalletProvidersRoute: typeof DashboardWalletProvidersRoute
@@ -291,6 +304,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardProjectsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/api-logs': {
+      id: '/dashboard/api-logs'
+      path: '/dashboard/api-logs'
+      fullPath: '/dashboard/api-logs'
+      preLoaderRoute: typeof DashboardApiLogsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard/api-key': {
       id: '/dashboard/api-key'
       path: '/dashboard/api-key'
@@ -344,6 +364,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   AuthVerifyEmailRoute: AuthVerifyEmailRoute,
   DashboardApiKeyRoute: DashboardApiKeyRoute,
+  DashboardApiLogsRoute: DashboardApiLogsRoute,
   DashboardProjectsRoute: DashboardProjectsRoute,
   DashboardTransactionsRoute: DashboardTransactionsRoute,
   DashboardWalletProvidersRoute: DashboardWalletProvidersRoute,

@@ -52,3 +52,10 @@ async function ensureDefaultApiKeys(projectId: string) {
 }
 
 export { createProjectApiKey, ensureDefaultApiKeys, listProjectApiKeys, revokeProjectApiKey };
+
+export function rotateProjectApiKey(projectId: string, apiKeyId: string) {
+	return apiRequest<ProjectApiKey>(`/projects/${projectId}/api-keys/${apiKeyId}/rotate`, {
+		method: "POST",
+		body: "{}",
+	});
+}

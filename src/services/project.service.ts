@@ -12,7 +12,7 @@ function createProject(payload: {
 	description?: string;
 	metadata?: Record<string, unknown>;
 }) {
-	return apiRequest<Project>(API_ROUTES.projects.create, {
+	return apiRequest<Project & { sandboxKey: string }>(API_ROUTES.projects.create, {
 		method: "POST",
 		body: JSON.stringify(payload),
 	});

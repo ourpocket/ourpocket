@@ -7,7 +7,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 interface ModularCardProps {
 	title?: string | ReactNode;
@@ -29,15 +29,17 @@ const ModularCard = ({
 	children,
 }: ModularCardProps) => {
 	return (
-		<Card className={className}>
+		<Card
+			className={`min-w-0 gap-0 overflow-hidden rounded-xl border-white/[0.08] bg-[#1b1b1b] py-0 shadow-none ${className}`}
+		>
 			{(title || description || action) && (
-				<CardHeader className={"text-white"}>
+				<CardHeader className="border-b border-white/[0.07] px-5 py-4 text-white">
 					{title && <CardTitle>{title}</CardTitle>}
 					{description && <CardDescription>{description}</CardDescription>}
 					{action && <CardAction>{action}</CardAction>}
 				</CardHeader>
 			)}
-			{content && <CardContent className={"text-white"}>{children}</CardContent>}
+			{content && <CardContent className="px-5 py-5 text-white">{children}</CardContent>}
 			{footer && <CardFooter>{footer}</CardFooter>}
 		</Card>
 	);

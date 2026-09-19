@@ -12,6 +12,7 @@ function setAuthToken(token: string) {
 function clearAuthToken() {
 	window.localStorage.removeItem(AUTH_TOKEN_KEY);
 	window.localStorage.removeItem(PROJECT_ID_KEY);
+	window.dispatchEvent(new Event("ourpocket.environment"));
 }
 
 function getStoredProjectId() {
@@ -20,10 +21,12 @@ function getStoredProjectId() {
 
 function setStoredProjectId(projectId: string) {
 	window.localStorage.setItem(PROJECT_ID_KEY, projectId);
+	window.dispatchEvent(new Event("ourpocket.environment"));
 }
 
 function clearStoredProjectId() {
 	window.localStorage.removeItem(PROJECT_ID_KEY);
+	window.dispatchEvent(new Event("ourpocket.environment"));
 }
 
 export {

@@ -357,6 +357,7 @@ body {
 }
 .provider-strip > p {
   margin: 0 0 var(--space-lg);
+  padding-inline: var(--space-lg);
   text-align: center;
   color: var(--color-subtle);
   font-size: var(--text-sm);
@@ -368,15 +369,23 @@ body {
   grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 .provider-list span {
-  min-height: 3.5rem;
-  display: grid;
-  place-items: center;
+  min-height: 4.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding-inline: 0.75rem;
   border-inline-start: var(--rule-thin) solid var(--color-rule);
-  color: var(--color-muted);
-  font-family: var(--font-code);
-  font-size: var(--text-xs);
-  letter-spacing: 0.04em;
 }
+.provider-logo img {
+  width: 100%;
+  max-width: 8rem;
+  height: 2rem;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  opacity: 0.8;
+}
+
 .provider-list span:last-child {
   border-inline-end: var(--rule-thin) solid var(--color-rule);
 }
@@ -769,8 +778,8 @@ body {
   .provider-list {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-  .provider-list span:nth-child(4) {
-    border-inline-start: var(--rule-thin) solid var(--color-rule);
+  .provider-list span:nth-child(3n) {
+    border-inline-end: var(--rule-thin) solid var(--color-rule);
   }
   .workflow-layout {
     grid-template-columns: minmax(0, 1fr);
@@ -843,8 +852,11 @@ body {
     width: calc(100% - var(--space-lg));
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .provider-list span:nth-child(odd) {
-    border-inline-start: var(--rule-thin) solid var(--color-rule);
+  .provider-list span:nth-child(3n) {
+    border-inline-end: 0;
+  }
+  .provider-list span:nth-child(even) {
+    border-inline-end: var(--rule-thin) solid var(--color-rule);
   }
   .landing-section,
   .workflow-section {

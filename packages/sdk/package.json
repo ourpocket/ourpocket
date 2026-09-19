@@ -1,0 +1,9 @@
+{
+  "name": "@ourpocket/sdk",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "exports": "./src/index.ts",
+  "scripts": { "check": "tsc --noEmit -p tsconfig.json", "test": "vitest run --config vitest.config.ts src" },
+  "dependencies": { "zod": "^4.1.0" }
+}

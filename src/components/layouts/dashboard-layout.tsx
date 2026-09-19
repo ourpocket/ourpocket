@@ -8,6 +8,7 @@ import DashboardSidebar from "@/components/module/dashboard/sidebar";
 import { Button } from "@/components/ui/button";
 import { accountMenuItems, mainMenuItems, supportMenuItems } from "@/config/sidebar";
 import { useProjects } from "@/hooks/use-projects";
+import { setEnvironment, useEnvironment, useSelectedProjectId } from "@/lib/environment";
 import { getSafeDashboardReturnPath } from "@/lib/onboarding";
 import { clearStoredProjectId, getAuthToken, getStoredProjectId } from "@/lib/session";
 import { ApiError } from "@/services/api-client";
@@ -29,9 +30,18 @@ type PlatformAccountStatus = "checking" | "missing" | "ready" | "error";
 
 const DashboardLayout = ({ children, title, description, actionTab }: Props) => {
 	const navigate = useNavigate();
+	const environment = useEnvironment();
+	const selectedProjectId = useSelectedProjectId();
 	const location = useLocation();
 	const { listProjects } = useProjects();
-	const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+	const [isSidebarOpen, setIsSidebarOpen] = useState(
+		() => window.matchMedia("(min-width: 1024px)").matches,
+	);
+
+	useEffect(() => {
+		if (!window.matchMedia("(min-width: 1024px)").matches) setIsSidebarOpen(false);
+	}, [location.pathname]);
 	const [canRender, setCanRender] = useState(false);
 	const [platformAccount, setPlatformAccount] = useState<PlatformAccount | null>(null);
 
@@ -174,30 +184,56 @@ const DashboardLayout = ({ children, title, description, actionTab }: Props) => 
 
 		return (
 			<PlatformAccountContext.Provider value={platformAccountContext}>
-				{canRender ? children : <p className="text-sm text-gray-500">Loading project…</p>}
+				{canRender ? (
+					<div key={`${selectedProjectId}:${environment}`}>{children}</div>
+				) : (
+					<p className="text-sm text-gray-500">Loading project…</p>
+				)}
 			</PlatformAccountContext.Provider>
 		);
 	};
 
 	return (
-		<div className="flex min-h-screen">
-			<DashboardSidebar
-				mainMenuItems={mainMenuItems}
-				accountMenuItems={accountMenuItems}
-				supportMenuItems={supportMenuItems}
-				isSidebarOpen={isSidebarOpen}
-				setIsSidebarOpen={setIsSidebarOpen}
-			/>
-
-			<main className="w-full">
-				<DashboardHeader />
-				<div className="flex-1 overflow-y-auto p-6">
-					<div className="container">
-						<PageInfo title={title} description={description} actionTab={actionTab} />
-						{renderMainContent()}
+		<div className="min-h-screen w-full max-w-full overflow-x-clip bg-[#171717]">
+			{environment === "sandbox" && (
+				<div className="flex min-h-10 w-full min-w-0 items-center justify-between gap-3 border-b border-orange-400/15 bg-orange-400/[0.07] px-4 text-xs sm:gap-4 sm:px-8">
+					<div className="flex min-w-0 items-center gap-3">
+						<span className="shrink-0 font-semibold text-orange-300">Sandbox mode</span>
+						<span className="hidden truncate text-white/50 sm:block">
+							Simulated data and balances. No real money moves in this environment.
+						</span>
 					</div>
+					<button
+						type="button"
+						className="shrink-0 rounded-md border border-orange-300/20 bg-orange-400/10 px-3 py-1.5 font-medium text-orange-200 transition-colors hover:bg-orange-400/15"
+						onClick={() => setEnvironment("production")}
+					>
+						<span className="sm:hidden">Production</span>
+						<span className="hidden sm:inline">Switch to production</span>
+					</button>
 				</div>
-			</main>
+			)}
+			<div
+				className={`flex w-full max-w-full ${environment === "sandbox" ? "min-h-[calc(100vh-2.5rem)]" : "min-h-screen"}`}
+			>
+				<DashboardSidebar
+					mainMenuItems={mainMenuItems}
+					accountMenuItems={accountMenuItems}
+					supportMenuItems={supportMenuItems}
+					isSidebarOpen={isSidebarOpen}
+					setIsSidebarOpen={setIsSidebarOpen}
+				/>
+
+				<main className="w-0 min-w-0 flex-1">
+					<DashboardHeader />
+					<div className="min-w-0 flex-1 overflow-y-auto px-5 py-8 sm:px-10 sm:py-10 lg:px-12 xl:px-14">
+						<div className="mx-auto w-full min-w-0 max-w-[1440px]">
+							<PageInfo title={title} description={description} actionTab={actionTab} />
+							{renderMainContent()}
+						</div>
+					</div>
+				</main>
+			</div>
 		</div>
 	);
 };

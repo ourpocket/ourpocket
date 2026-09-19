@@ -1,6 +1,5 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap");
 
 @custom-variant dark (&:is(.dark *));
 
@@ -15,16 +14,21 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: #171717 !important;
   color: white !important;
-  font-family: "Outfit", sans-serif !important;
+  font-family: "Inter Variable", Inter, ui-sans-serif, system-ui, sans-serif !important;
 }
 
 * {
-  font-family: "Outfit", sans-serif !important;
+  font-family: "Inter Variable", Inter, ui-sans-serif, system-ui, sans-serif !important;
 }
 
 code {
   font-family:
     source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+}
+
+.font-mono,
+.font-mono * {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace !important;
 }
 
 @theme inline {
@@ -108,8 +112,8 @@ code {
 
 .dark {
   --default-bg: #fb8a2e;
-  --default-bg: #fb8a2e;
-  --background: var(--primary-dark) --foreground: var(--primary-dark);
+  --background: var(--primary-dark);
+  --foreground: var(--primary-dark);
   --card: oklch(0.21 0.006 285.885);
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.21 0.006 285.885);

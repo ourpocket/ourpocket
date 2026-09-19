@@ -12,9 +12,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Typography } from "@/components/ui/typography";
 import { useCurrentProject } from "@/hooks/use-current-project";
 import { ApiError } from "@/services/api-client";
 import {
+	configureProjectProvider,
 	connectProjectProvider,
 	listProjectProviders,
 	listProviderCatalog,
@@ -25,8 +27,18 @@ import {
 	type ProviderCatalog,
 	ProviderCatalogStatus,
 	ProviderCategory,
+	type ProviderCredentialField,
 } from "@/services/types";
-import { AlertCircle, LoaderCircle, Plus, Search, Settings2 } from "lucide-react";
+import {
+	AlertCircle,
+	CheckCircle2,
+	Clock3,
+	Link2,
+	LoaderCircle,
+	Plus,
+	Search,
+	Settings2,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 
@@ -37,6 +49,8 @@ const categoryLabels: Record<ProviderCategory, string> = {
 };
 
 const capabilityLabels: Record<ProviderCapability, string> = {
+	[ProviderCapability.PAYMENTS]: "Payments",
+	[ProviderCapability.REFUNDS]: "Refunds",
 	[ProviderCapability.WALLET_OPERATIONS]: "Wallets",
 	[ProviderCapability.PAYMENT_COLLECTION]: "Payments",
 	[ProviderCapability.BANK_DATA]: "Bank data",
@@ -63,18 +77,73 @@ function statusClass(status: ProviderCatalogStatus): string {
 	return "border-white/10 bg-white/5 text-zinc-400";
 }
 
+const legacyCredentialFields: ProviderCredentialField[] = [
+	{
+		key: "apiKey",
+		label: "API key",
+		type: "secret",
+		required: true,
+	},
+];
+
+type ProviderView = "catalog" | "connected";
+
+type ProviderFormTarget =
+	| {
+			kind: "catalog";
+			provider: ProviderCatalog;
+			action: "connect" | "manage";
+	  }
+	| {
+			kind: "legacy";
+			connection: ProjectProvider;
+			action: "manage";
+	  };
+
+function formatProviderType(type: ProjectProvider["type"]): string {
+	return type.charAt(0).toUpperCase() + type.slice(1);
+}
+
+function getConnectionName(connection: ProjectProvider): string {
+	return connection.provider?.name ?? formatProviderType(connection.type);
+}
+
+function getConnectionLogo(connection: ProjectProvider): string {
+	return connection.provider?.logoAsset ?? "/img/provider-placeholder.svg";
+}
+
+function formatConnectionDate(value: string): string {
+	const date = new Date(value);
+
+	if (Number.isNaN(date.getTime())) {
+		return "Connection date unavailable";
+	}
+
+	return `Connected ${new Intl.DateTimeFormat(undefined, {
+		month: "short",
+		day: "numeric",
+		year: "numeric",
+	}).format(date)}`;
+}
+
+function connectionStatusClass(isActive: boolean): string {
+	return isActive
+		? "border-emerald-500/25 bg-emerald-500/10 text-emerald-300"
+		: "border-white/10 bg-white/5 text-zinc-400";
+}
+
 interface ProviderConnectionDialogProps {
-	provider: ProviderCatalog | null;
+	target: ProviderFormTarget | null;
 	projectName: string;
 	onClose: () => void;
-	onConnected: (config: Record<string, string>) => Promise<void>;
+	onSave: (target: ProviderFormTarget, config: Record<string, string>) => Promise<void>;
 }
 
 function ProviderConnectionDialog({
-	provider,
+	target,
 	projectName,
 	onClose,
-	onConnected,
+	onSave,
 }: ProviderConnectionDialogProps) {
 	const [values, setValues] = useState<Record<string, string>>({});
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -83,16 +152,30 @@ function ProviderConnectionDialog({
 	useEffect(() => {
 		setValues({});
 		setErrorMessage(null);
-	}, [provider]);
+	}, [target]);
+
+	const providerName = target
+		? target.kind === "catalog"
+			? target.provider.name
+			: getConnectionName(target.connection)
+		: "provider";
+
+	const credentialFields = target
+		? target.kind === "catalog"
+			? target.provider.credentialFields
+			: legacyCredentialFields
+		: [];
+
+	const isManaging = target?.action === "manage";
 
 	const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 
-		if (!provider) {
+		if (!target) {
 			return;
 		}
 
-		const missingField = provider.credentialFields.find(
+		const missingField = credentialFields.find(
 			(field) => field.required && !values[field.key]?.trim(),
 		);
 
@@ -106,7 +189,7 @@ function ProviderConnectionDialog({
 		setIsSubmitting(true);
 
 		try {
-			await onConnected(values);
+			await onSave(target, values);
 		} catch (error) {
 			setErrorMessage(
 				error instanceof ApiError || error instanceof Error
@@ -119,17 +202,19 @@ function ProviderConnectionDialog({
 	};
 
 	return (
-		<Dialog open={Boolean(provider)} onOpenChange={(open) => !open && onClose()}>
+		<Dialog open={Boolean(target)} onOpenChange={(open) => !open && onClose()}>
 			<DialogContent className="border-white/10 bg-[#1b1b1b] text-white sm:max-w-md">
 				<DialogHeader>
-					<DialogTitle>Connect {provider?.name}</DialogTitle>
+					<DialogTitle>
+						{isManaging ? "Manage" : "Connect"} {providerName}
+					</DialogTitle>
 					<DialogDescription className="leading-6 text-zinc-400">
 						These credentials are encrypted and used only by {projectName}.
 					</DialogDescription>
 				</DialogHeader>
 
 				<form onSubmit={handleSubmit} className="space-y-5">
-					{provider?.credentialFields.map((field) => (
+					{credentialFields.map((field) => (
 						<div key={field.key} className="space-y-2">
 							<Label htmlFor={`provider-${field.key}`}>
 								{field.label}
@@ -160,7 +245,7 @@ function ProviderConnectionDialog({
 						</Button>
 						<Button type="submit" disabled={isSubmitting}>
 							{isSubmitting && <LoaderCircle className="animate-spin" aria-hidden="true" />}
-							{isSubmitting ? "Connecting…" : "Connect provider"}
+							{isSubmitting ? "Saving…" : isManaging ? "Save connection" : "Connect provider"}
 						</Button>
 					</DialogFooter>
 				</form>
@@ -177,7 +262,8 @@ function WalletProvidersContent() {
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 	const [search, setSearch] = useState("");
 	const [selectedCategory, setSelectedCategory] = useState<ProviderCategory | "all">("all");
-	const [selectedProvider, setSelectedProvider] = useState<ProviderCatalog | null>(null);
+	const [activeView, setActiveView] = useState<ProviderView>("catalog");
+	const [selectedTarget, setSelectedTarget] = useState<ProviderFormTarget | null>(null);
 
 	const loadProviders = useCallback(async () => {
 		if (!project) {
@@ -237,16 +323,28 @@ function WalletProvidersContent() {
 		[filteredCatalog],
 	);
 
-	const connectProvider = async (config: Record<string, string>) => {
-		if (!project || !selectedProvider) {
+	const saveProviderConnection = async (
+		target: ProviderFormTarget,
+		config: Record<string, string>,
+	) => {
+		if (!project) {
 			return;
 		}
 
-		await connectProjectProvider(project.id, {
-			providerId: selectedProvider.id,
-			config,
-		});
-		setSelectedProvider(null);
+		if (target.kind === "legacy") {
+			await configureProjectProvider(project.id, {
+				type: target.connection.type,
+				config,
+				isActive: target.connection.isActive,
+			});
+		} else {
+			await connectProjectProvider(project.id, {
+				providerId: target.provider.id,
+				config,
+			});
+		}
+
+		setSelectedTarget(null);
 		await loadProviders();
 	};
 
@@ -259,48 +357,57 @@ function WalletProvidersContent() {
 	}
 
 	return (
-		<div className="space-y-8">
-			<div className="flex flex-col gap-4 border-b border-white/10 pb-6 lg:flex-row lg:items-end lg:justify-between">
-				<div>
-					<h2 className="text-xl font-semibold text-white">Connect a provider</h2>
-					<p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
-						Add a provider account to{" "}
-						<span className="font-medium text-zinc-200">{project.name}</span> so your project can
-						use it through the OurPocket API.
-					</p>
-				</div>
-				<div className="relative w-full lg:max-w-sm">
-					<Search
-						className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-zinc-500"
-						aria-hidden="true"
-					/>
-					<Input
-						value={search}
-						onChange={(event) => setSearch(event.target.value)}
-						placeholder="Search providers"
-						className="pl-9"
-					/>
-				</div>
-			</div>
-
-			<div className="flex flex-wrap gap-2" aria-label="Provider categories">
-				<Button
-					type="button"
-					variant={selectedCategory === "all" ? "default" : "outline"}
-					onClick={() => setSelectedCategory("all")}
-				>
-					All providers
-				</Button>
-				{Object.values(ProviderCategory).map((category) => (
+		<div className="space-y-6">
+			<div
+				className="flex flex-col gap-3 rounded-xl border border-white/[0.08] bg-[#1b1b1b] p-3 sm:flex-row sm:items-center sm:justify-between"
+				role="tablist"
+				aria-label="Provider views"
+			>
+				<div className="flex w-full rounded-lg bg-black/20 p-1 sm:w-auto">
 					<Button
-						key={category}
 						type="button"
-						variant={selectedCategory === category ? "default" : "outline"}
-						onClick={() => setSelectedCategory(category)}
+						role="tab"
+						aria-selected={activeView === "catalog"}
+						variant="ghost"
+						className={
+							activeView === "catalog"
+								? "flex-1 !bg-white/[0.08] text-white sm:flex-none"
+								: "flex-1 !bg-transparent text-white/45 hover:!bg-white/[0.04] hover:text-white sm:flex-none"
+						}
+						onClick={() => setActiveView("catalog")}
 					>
-						{categoryLabels[category]}
+						Catalog
 					</Button>
-				))}
+					<Button
+						type="button"
+						role="tab"
+						aria-selected={activeView === "connected"}
+						variant="ghost"
+						className={
+							activeView === "connected"
+								? "flex-1 !bg-white/[0.08] text-white sm:flex-none"
+								: "flex-1 !bg-transparent text-white/45 hover:!bg-white/[0.04] hover:text-white sm:flex-none"
+						}
+						onClick={() => setActiveView("connected")}
+					>
+						Connected
+						<span className="ml-1 text-xs text-white/40">{projectProviders.length}</span>
+					</Button>
+				</div>
+				{activeView === "catalog" && (
+					<div className="relative w-full sm:max-w-xs">
+						<Search
+							className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-white/35"
+							aria-hidden="true"
+						/>
+						<Input
+							value={search}
+							onChange={(event) => setSearch(event.target.value)}
+							placeholder="Search providers"
+							className="h-9 border-white/[0.08] bg-black/15 pl-9"
+						/>
+					</div>
+				)}
 			</div>
 
 			{errorMessage ? (
@@ -319,104 +426,233 @@ function WalletProvidersContent() {
 						<Skeleton key={index} className="h-64 w-full" />
 					))}
 				</div>
+			) : activeView === "connected" ? (
+				projectProviders.length === 0 ? (
+					<div className="rounded-xl border border-dashed border-white/[0.12] bg-white/[0.015] px-6 py-14 text-center">
+						<Link2 className="mx-auto size-6 text-zinc-500" aria-hidden="true" />
+						<Typography variant="heading" className="mt-4">
+							No providers connected yet
+						</Typography>
+						<Typography className="mx-auto mt-2 max-w-md">
+							Browse the catalog to connect the provider account this project will use.
+						</Typography>
+						<Button type="button" className="mt-5" onClick={() => setActiveView("catalog")}>
+							Browse catalog
+						</Button>
+					</div>
+				) : (
+					<div className="divide-y divide-white/[0.07] overflow-hidden rounded-xl border border-white/[0.08] bg-[#1b1b1b]">
+						{projectProviders.map((connection) => {
+							const isCatalogConnection = Boolean(connection.provider);
+
+							return (
+								<article
+									key={connection.id}
+									className="flex flex-col gap-5 p-5 transition-colors hover:bg-white/[0.015] sm:flex-row sm:items-center sm:justify-between"
+								>
+									<div className="flex min-w-0 items-start gap-4">
+										<img
+											src={getConnectionLogo(connection)}
+											alt=""
+											className="size-10 shrink-0 rounded-md object-contain"
+											onError={(event) => {
+												event.currentTarget.src = "/img/provider-placeholder.svg";
+											}}
+										/>
+										<div className="min-w-0">
+											<Typography variant="subheading">{getConnectionName(connection)}</Typography>
+											<Typography variant="bodySmall" className="mt-1">
+												{formatConnectionDate(connection.createdAt)}
+											</Typography>
+											{!isCatalogConnection && (
+												<Typography variant="caption" className="mt-1">
+													Legacy project connection
+												</Typography>
+											)}
+										</div>
+									</div>
+									<div className="flex flex-wrap items-center gap-2 sm:justify-end">
+										<Badge className={connectionStatusClass(connection.isActive)}>
+											{connection.isActive ? (
+												<CheckCircle2 className="mr-1 size-3" aria-hidden="true" />
+											) : (
+												<Clock3 className="mr-1 size-3" aria-hidden="true" />
+											)}
+											{connection.isActive ? "Active" : "Inactive"}
+										</Badge>
+										{connection.provider && (
+											<Badge className={statusClass(connection.provider.status)}>
+												{catalogStatusLabels[connection.provider.status]}
+											</Badge>
+										)}
+										<Button
+											type="button"
+											variant="outline"
+											onClick={() =>
+												setSelectedTarget(
+													connection.provider
+														? { kind: "catalog", provider: connection.provider, action: "manage" }
+														: { kind: "legacy", connection, action: "manage" },
+												)
+											}
+										>
+											<Settings2 aria-hidden="true" />
+											Manage connection
+										</Button>
+									</div>
+								</article>
+							);
+						})}
+					</div>
+				)
 			) : (
-				<div className="space-y-10">
-					{groupedCatalog.map(({ category, providers }) => {
-						if (providers.length === 0) {
-							return null;
-						}
-
-						return (
-							<section
+				<>
+					<div className="flex flex-wrap gap-2" aria-label="Provider categories">
+						<Button
+							type="button"
+							variant={selectedCategory === "all" ? "default" : "ghost"}
+							className={
+								selectedCategory === "all"
+									? "h-8"
+									: "h-8 border border-white/[0.08] !bg-transparent text-white/45 hover:!bg-white/[0.04] hover:text-white"
+							}
+							onClick={() => setSelectedCategory("all")}
+						>
+							All providers
+						</Button>
+						{Object.values(ProviderCategory).map((category) => (
+							<Button
 								key={category}
-								className="space-y-4"
-								aria-labelledby={`category-${category}`}
+								type="button"
+								variant={selectedCategory === category ? "default" : "ghost"}
+								className={
+									selectedCategory === category
+										? "h-8"
+										: "h-8 border border-white/[0.08] !bg-transparent text-white/45 hover:!bg-white/[0.04] hover:text-white"
+								}
+								onClick={() => setSelectedCategory(category)}
 							>
-								<h3 id={`category-${category}`} className="text-base font-semibold text-white">
-									{categoryLabels[category]}
-								</h3>
-								<div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-									{providers.map((provider) => {
-										const isConnected = connectedProviderIds.has(provider.id);
-										const canConnect = provider.status === ProviderCatalogStatus.ACTIVE;
+								{categoryLabels[category]}
+							</Button>
+						))}
+					</div>
+					<div className="space-y-8">
+						{groupedCatalog.map(({ category, providers }) => {
+							if (providers.length === 0) {
+								return null;
+							}
 
-										return (
-											<article
-												key={provider.id}
-												className="flex min-h-64 flex-col rounded-xl border border-white/10 bg-card/70 p-5"
-											>
-												<div className="flex items-start justify-between gap-4">
-													<img
-														src={provider.logoAsset}
-														alt=""
-														className="size-9 rounded-md object-contain"
-														onError={(event) => {
-															event.currentTarget.src = "/img/provider-placeholder.svg";
-														}}
-													/>
-													<Badge className={statusClass(provider.status)}>
-														{catalogStatusLabels[provider.status]}
-													</Badge>
-												</div>
-												<div className="mt-5">
-													<h4 className="font-semibold text-white">{provider.name}</h4>
-													<p className="mt-2 text-sm leading-6 text-zinc-400">
-														{provider.description}
-													</p>
-												</div>
-												<div className="mt-4 flex flex-wrap gap-2">
-													{provider.capabilities.map((capability) => (
-														<span key={capability} className="text-xs text-zinc-500">
-															{capabilityLabels[capability]}
-														</span>
-													))}
-												</div>
-												<div className="mt-auto pt-5">
-													{isConnected ? (
-														<Button
-															type="button"
-															variant="outline"
-															onClick={() => setSelectedProvider(provider)}
-														>
-															<Settings2 aria-hidden="true" />
-															Manage connection
-														</Button>
-													) : (
-														<Button
-															type="button"
-															disabled={!canConnect}
-															onClick={() => setSelectedProvider(provider)}
-														>
-															{canConnect ? (
-																<Plus aria-hidden="true" />
-															) : (
-																<LoaderCircle aria-hidden="true" />
-															)}
-															{canConnect ? "Add to project" : catalogStatusLabels[provider.status]}
-														</Button>
-													)}
-												</div>
-											</article>
-										);
-									})}
-								</div>
-							</section>
-						);
-					})}
+							return (
+								<section
+									key={category}
+									className="space-y-3"
+									aria-labelledby={`category-${category}`}
+								>
+									<Typography
+										as="h3"
+										variant="label"
+										id={`category-${category}`}
+										className="uppercase tracking-[0.08em] text-white/45"
+									>
+										{categoryLabels[category]}
+									</Typography>
+									<div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
+										{providers.map((provider) => {
+											const isConnected = connectedProviderIds.has(provider.id);
+											const canConnect = provider.status === ProviderCatalogStatus.ACTIVE;
 
-					{filteredCatalog.length === 0 && (
-						<div className="rounded-xl border border-dashed border-white/15 p-10 text-center text-sm text-zinc-400">
-							No providers match your search.
-						</div>
-					)}
-				</div>
+											return (
+												<article
+													key={provider.id}
+													className="group flex min-h-56 flex-col rounded-xl border border-white/[0.08] bg-[#1b1b1b] p-5 transition-colors hover:border-white/[0.14] hover:bg-[#1d1d1d]"
+												>
+													<div className="flex items-start justify-between gap-4">
+														<img
+															src={provider.logoAsset}
+															alt=""
+															className="size-11 rounded-lg border border-white/[0.07] bg-white/[0.025] p-2 object-contain"
+															onError={(event) => {
+																event.currentTarget.src = "/img/provider-placeholder.svg";
+															}}
+														/>
+														<Badge className={statusClass(provider.status)}>
+															{catalogStatusLabels[provider.status]}
+														</Badge>
+													</div>
+													<div className="mt-4">
+														<Typography variant="heading">{provider.name}</Typography>
+														<Typography className="mt-1.5 line-clamp-2">
+															{provider.description}
+														</Typography>
+													</div>
+													<div className="mt-4 flex flex-wrap gap-1.5">
+														{provider.capabilities.map((capability) => (
+															<Typography
+																key={capability}
+																variant="caption"
+																className="rounded-md border border-white/[0.07] bg-white/[0.025] px-2 py-1 text-white/45"
+															>
+																{capabilityLabels[capability]}
+															</Typography>
+														))}
+													</div>
+													<div className="mt-auto pt-5">
+														{isConnected ? (
+															<Button
+																type="button"
+																variant="outline"
+																onClick={() =>
+																	setSelectedTarget({ kind: "catalog", provider, action: "manage" })
+																}
+															>
+																<Settings2 aria-hidden="true" />
+																Manage connection
+															</Button>
+														) : (
+															<Button
+																type="button"
+																disabled={!canConnect}
+																onClick={() =>
+																	setSelectedTarget({
+																		kind: "catalog",
+																		provider,
+																		action: "connect",
+																	})
+																}
+															>
+																{canConnect ? (
+																	<Plus aria-hidden="true" />
+																) : (
+																	<Clock3 aria-hidden="true" />
+																)}
+																{canConnect
+																	? "Add to project"
+																	: catalogStatusLabels[provider.status]}
+															</Button>
+														)}
+													</div>
+												</article>
+											);
+										})}
+									</div>
+								</section>
+							);
+						})}
+
+						{filteredCatalog.length === 0 && (
+							<div className="rounded-xl border border-dashed border-white/[0.12] bg-white/[0.015] p-12 text-center">
+								<Typography>No providers match your search.</Typography>
+							</div>
+						)}
+					</div>
+				</>
 			)}
 
 			<ProviderConnectionDialog
-				provider={selectedProvider}
+				target={selectedTarget}
 				projectName={project.name}
-				onClose={() => setSelectedProvider(null)}
-				onConnected={connectProvider}
+				onClose={() => setSelectedTarget(null)}
+				onSave={saveProviderConnection}
 			/>
 		</div>
 	);

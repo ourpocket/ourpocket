@@ -5,6 +5,7 @@ import ModularModals from "@/components/module/popovers/modular-modals.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { useApiKeys } from "@/hooks/use-api-keys";
 import { useCurrentProject } from "@/hooks/use-current-project";
+import { getStoredProjectId } from "@/lib/session";
 import { type ProjectApiKey, ProjectApiKeyScope } from "@/services/types";
 import { Copy, Eye, EyeSlash, Trash } from "iconsax-reactjs";
 import { useEffect, useState } from "react";
@@ -56,9 +57,11 @@ async function copyText(value: string) {
 const ApiKeyCard = ({
 	apiKey,
 	onRevoke,
+	onRotate,
 }: {
 	apiKey: ProjectApiKey;
 	onRevoke: (apiKeyId: string) => void;
+	onRotate: (apiKeyId: string) => void;
 }) => {
 	const [isVisible, setIsVisible] = useState(false);
 	const canRevealFullKey = Boolean(apiKey.rawKey);
@@ -113,6 +116,9 @@ const ApiKeyCard = ({
 							<Eye variant={"Bulk"} size={20} />
 						)}
 					</button>
+					<Button size="sm" variant="outline" onClick={() => onRotate(apiKey.id)}>
+						Rotate
+					</Button>
 					<Trash
 						variant={"Bulk"}
 						size={20}
@@ -126,12 +132,13 @@ const ApiKeyCard = ({
 };
 
 const ApiKeysPage = () => {
-	const { project, isLoading } = useCurrentProject();
-	const { ensureDefaultApiKeys, revokeProjectApiKey } = useApiKeys();
+	const { project, environment, isLoading } = useCurrentProject();
+	const { listProjectApiKeys, revokeProjectApiKey, rotateProjectApiKey } = useApiKeys();
 	const [apiKeys, setApiKeys] = useState<ProjectApiKey[]>([]);
 
 	useEffect(() => {
 		let isMounted = true;
+		setApiKeys([]);
 
 		async function loadApiKeys() {
 			if (!project) {
@@ -139,7 +146,7 @@ const ApiKeysPage = () => {
 			}
 
 			try {
-				const keys = await ensureDefaultApiKeys(project.id);
+				const keys = await listProjectApiKeys(project.id);
 				if (isMounted) {
 					setApiKeys(keys);
 				}
@@ -183,9 +190,27 @@ const ApiKeysPage = () => {
 		>
 			<div className={"grid grid-cols-1 lg:grid-cols-2 w-full gap-2"}>
 				{isLoading && <p className="text-sm text-gray-500">Loading keys...</p>}
-				{apiKeys.map((apiKey) => (
-					<ApiKeyCard key={apiKey.id} apiKey={apiKey} onRevoke={handleRevoke} />
-				))}
+				{apiKeys
+					.filter(
+						(key) =>
+							key.scope ===
+							(environment === "sandbox" ? ProjectApiKeyScope.TEST : ProjectApiKeyScope.LIVE),
+					)
+					.map((apiKey) => (
+						<ApiKeyCard
+							key={apiKey.id}
+							apiKey={apiKey}
+							onRevoke={handleRevoke}
+							onRotate={(id) => {
+								if (project)
+									void rotateProjectApiKey(project.id, id)
+										.then((apiKey) => {
+											if (getStoredProjectId() === project.id) handleGenerated(apiKey);
+										})
+										.catch(() => toast.error("Could not rotate API key"));
+							}}
+						/>
+					))}
 			</div>
 		</DashboardLayout>
 	);

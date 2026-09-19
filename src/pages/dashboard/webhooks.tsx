@@ -1,9 +1,11 @@
-import DashboardLayout from "@/components/layouts/dashboard-layout.tsx";
+import DashboardLayout from "@/components/layouts/dashboard-layout";
 import { ModularCard } from "@/components/module/card";
-import ModularModals from "@/components/module/popovers/modular-modals.tsx";
-import { Badge } from "@/components/ui/badge.tsx";
-import { Button } from "@/components/ui/button.tsx";
+import ModularModals from "@/components/module/popovers/modular-modals";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { SyntaxCode } from "@/components/ui/syntax-code";
 import {
 	Table,
 	TableBody,
@@ -11,240 +13,322 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-} from "@/components/ui/table.tsx";
+} from "@/components/ui/table";
 import { useCurrentProject } from "@/hooks/use-current-project";
-import { useWebhooks } from "@/hooks/use-webhooks";
-import { type WebhookEndpoint, WebhookEvent } from "@/services/types";
-import { Copy, Eye, EyeSlash, Trash } from "iconsax-reactjs";
-import { ExternalLink } from "lucide-react";
-import moment from "moment";
-import { useEffect, useState } from "react";
-import type { FormEvent } from "react";
-import { toast } from "sonner";
+import { useEnvironment, useSelectedProjectId } from "@/lib/environment";
+import { apiRequest } from "@/services/api-client";
+import {
+	type FinancialDelivery,
+	listDeliveries,
+	replayDelivery,
+	sendTestEvent,
+} from "@/services/financial.service";
+import { type FormEvent, useCallback, useEffect, useState } from "react";
+import { z } from "zod";
 
-interface AddEndpointProps {
-	projectId?: string;
-	onCreated: (webhook: WebhookEndpoint) => void;
-}
+const endpointSchema = z.object({
+	id: z.uuid(),
+	url: z.url(),
+	eventTypes: z.array(z.string()).nullable(),
+	isActive: z.boolean(),
+	secret: z.string().optional(),
+	createdAt: z.string(),
+});
 
-const AddEndpoint = ({ projectId, onCreated }: AddEndpointProps) => {
-	const { createWebhook } = useWebhooks();
+type Endpoint = z.infer<typeof endpointSchema>;
+
+function WebhooksContent() {
+	const { project, environment } = useCurrentProject();
+	const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
+	const [deliveries, setDeliveries] = useState<FinancialDelivery[]>([]);
+	const [selected, setSelected] = useState<FinancialDelivery | null>(null);
+	const [secret, setSecret] = useState<string | null>(null);
 	const [url, setUrl] = useState("");
-	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [filters, setFilters] = useState("");
+	const [error, setError] = useState<string | null>(null);
+	const [busy, setBusy] = useState(false);
+	const [loading, setLoading] = useState(false);
 
-	const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-		event.preventDefault();
+	const refresh = useCallback(async () => {
+		if (!project) return;
 
-		if (!projectId) {
-			return;
-		}
+		const [hooks, history] = await Promise.all([
+			apiRequest<unknown>(`/projects/${project.id}/financial/webhooks`),
+			listDeliveries(project.id),
+		]);
 
-		setIsSubmitting(true);
-
-		try {
-			const webhook = await createWebhook(projectId, {
-				url,
-				eventTypes: [WebhookEvent.TRANSACTION_SUCCESS, WebhookEvent.TRANSACTION_FAILED],
-				isActive: true,
-			});
-			onCreated(webhook);
-			setUrl("");
-			toast.success("Webhook endpoint added");
-		} catch (error) {
-			const message = error instanceof Error ? error.message : "Could not add webhook";
-			toast.error(message);
-		} finally {
-			setIsSubmitting(false);
-		}
-	};
-
-	return (
-		<ModularModals trigger={<Button variant="default">Add Endpoint</Button>}>
-			<form onSubmit={handleSubmit} className="space-y-4">
-				<Input
-					value={url}
-					onChange={(event) => setUrl(event.target.value)}
-					placeholder="https://api.yourapp.com/ourpocket/webhook"
-					type="url"
-					required
-				/>
-				<Button type="submit" className="w-full" disabled={isSubmitting}>
-					{isSubmitting ? "Saving..." : "Save Endpoint"}
-				</Button>
-			</form>
-		</ModularModals>
-	);
-};
-
-const statusStyles: Record<string, string> = {
-	Active: "bg-green-100 text-green-700 border border-green-200",
-	Inactive: "bg-red-100 text-red-700 border border-red-200",
-};
-
-const StatusBadge = ({ status }: { status: keyof typeof statusStyles }) => (
-	<Badge className={`${statusStyles[status]} px-2 py-0.5 rounded-md text-xs`}>{status}</Badge>
-);
-
-const tableHeaders = ["Endpoint ID", "Events", "Endpoint", "Status", "Secret", "Created", "Action"];
-
-const WebhookUrlCard = ({ url }: { url: string }) => {
-	const [isVisible, setIsVisible] = useState(false);
-
-	return (
-		<ModularCard title="Webhook Endpoint" content={true} className="w-full">
-			<div className="flex items-center justify-between">
-				<div className="bg-gray-700/20 p-2 rounded-md max-w-[400px] truncate">
-					<p className="text-sm">{isVisible ? url : url.replace(/https?:\/\//, "••••••••/")}</p>
-				</div>
-				<div className="flex gap-2">
-					<Copy
-						variant="Bulk"
-						size={20}
-						className="cursor-pointer"
-						onClick={() => navigator.clipboard.writeText(url)}
-					/>
-					{isVisible ? (
-						<EyeSlash
-							variant="Bulk"
-							size={20}
-							className="cursor-pointer"
-							onClick={() => setIsVisible(false)}
-						/>
-					) : (
-						<Eye
-							variant="Bulk"
-							size={20}
-							className="cursor-pointer"
-							onClick={() => setIsVisible(true)}
-						/>
-					)}
-				</div>
-			</div>
-		</ModularCard>
-	);
-};
-
-const WebhooksPage = () => {
-	const { project, isLoading } = useCurrentProject();
-	const { deleteWebhook, listWebhooks } = useWebhooks();
-	const [webhooks, setWebhooks] = useState<WebhookEndpoint[]>([]);
-	const unifiedWebhookUrl = `${import.meta.env.VITE_API_PUBLIC_URL || "http://localhost:3000"}/ourpocket/webhook`;
+		setEndpoints(z.array(endpointSchema).parse(hooks));
+		setDeliveries(history);
+	}, [project?.id, environment]);
 
 	useEffect(() => {
-		let isMounted = true;
+		let cancelled = false;
+		setEndpoints([]);
+		setDeliveries([]);
+		setSelected(null);
+		setSecret(null);
+		setError(null);
 
-		async function loadWebhooks() {
-			if (!project) {
-				return;
-			}
-
-			try {
-				const endpoints = await listWebhooks(project.id);
-				if (isMounted) {
-					setWebhooks(endpoints);
+		if (!project) return;
+		setLoading(true);
+		Promise.all([
+			apiRequest<unknown>(`/projects/${project.id}/financial/webhooks`),
+			listDeliveries(project.id),
+		])
+			.then(([hooks, history]) => {
+				if (!cancelled) {
+					setEndpoints(z.array(endpointSchema).parse(hooks));
+					setDeliveries(history);
 				}
-			} catch (error) {
-				const message = error instanceof Error ? error.message : "Could not load webhooks";
-				toast.error(message);
-			}
-		}
-
-		void loadWebhooks();
+			})
+			.catch((reason) => {
+				if (!cancelled)
+					setError(reason instanceof Error ? reason.message : "Could not load webhooks");
+			})
+			.finally(() => {
+				if (!cancelled) setLoading(false);
+			});
 
 		return () => {
-			isMounted = false;
+			cancelled = true;
 		};
-	}, [project]);
+	}, [project?.id, environment]);
 
-	const handleCreated = (webhook: WebhookEndpoint) => {
-		setWebhooks((current) => [webhook, ...current]);
-	};
-
-	const handleDelete = async (webhookId: string) => {
-		if (!project) {
-			return;
-		}
+	async function run(action: () => Promise<void>) {
+		setBusy(true);
+		setError(null);
 
 		try {
-			await deleteWebhook(project.id, webhookId);
-			setWebhooks((current) => current.filter((webhook) => webhook.id !== webhookId));
-			toast.success("Webhook endpoint deleted");
-		} catch (error) {
-			const message = error instanceof Error ? error.message : "Could not delete webhook";
-			toast.error(message);
+			await action();
+			await refresh();
+		} catch (reason) {
+			setError(reason instanceof Error ? reason.message : "Request failed");
+		} finally {
+			setBusy(false);
 		}
-	};
+	}
+
+	async function create(event: FormEvent) {
+		event.preventDefault();
+
+		if (!project) return;
+		await run(async () => {
+			const endpoint = endpointSchema.parse(
+				await apiRequest<unknown>(`/projects/${project.id}/financial/webhooks`, {
+					method: "POST",
+					body: JSON.stringify({ url, events: filters }),
+				}),
+			);
+
+			setSecret(endpoint.secret ?? null);
+			setUrl("");
+		});
+	}
 
 	return (
-		<DashboardLayout>
-			<div className="flex flex-col gap-6">
-				<WebhookUrlCard url={unifiedWebhookUrl} />
-
-				<div className="rounded-xl border bg-card p-6 shadow-md text-white">
-					<div className="flex items-center justify-between mb-6">
-						<div>
-							<h3 className="text-lg font-semibold mb-2">Webhook Endpoints</h3>
-							<p className="text-sm text-gray-300 mb-6">
-								Configure where OurPocket sends normalized project events
+		<DashboardLayout
+			title="Webhooks"
+			description="Inspect, test, and replay signed event deliveries."
+			actionTab={
+				<ModularModals trigger={<Button>Add Endpoint</Button>}>
+					<form className="space-y-4" onSubmit={create}>
+						<Label className="grid gap-2">
+							Endpoint URL
+							<Input
+								aria-label="Endpoint URL"
+								type="url"
+								value={url}
+								onChange={(event) => setUrl(event.target.value)}
+								placeholder="https://api.yourapp.com/webhooks"
+								required
+							/>
+						</Label>
+						<Label className="grid gap-2">
+							Event filters
+							<Input
+								aria-label="Event filters"
+								value={filters}
+								onChange={(event) => setFilters(event.target.value)}
+								placeholder="payment.completed,refund.completed"
+							/>
+						</Label>
+						<p className="text-xs text-gray-400">Leave filters empty to receive all events.</p>
+						<Button type="submit" disabled={busy}>
+							Save endpoint
+						</Button>
+						{secret && (
+							<p role="status" className="break-all text-sm">
+								Save this signing secret now: <code>{secret}</code>
 							</p>
-						</div>
-
-						<AddEndpoint projectId={project?.id} onCreated={handleCreated} />
-					</div>
-
-					{isLoading && <p className="mb-4 text-sm text-gray-500">Loading webhooks...</p>}
-
-					<Table>
-						<TableHeader>
-							<TableRow className="border-b border-gray-700">
-								{tableHeaders.map((head) => (
-									<TableHead key={head} className="text-gray-200 py-3 px-4">
-										{head}
-									</TableHead>
-								))}
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{webhooks.map((webhook) => (
-								<TableRow key={webhook.id} className="hover:bg-gray-800 transition-colors">
-									<TableCell className="font-mono py-3 px-4">{webhook.id}</TableCell>
-									<TableCell className="py-3 px-4">
-										{(webhook.eventTypes ?? []).map((event) => (
-											<Badge key={event} className="text-xs mr-1">
-												{event}
-											</Badge>
-										))}
-									</TableCell>
-									<TableCell className="truncate max-w-[280px] py-3 px-4">{webhook.url}</TableCell>
-									<TableCell className="py-3 px-4">
-										<StatusBadge status={webhook.isActive ? "Active" : "Inactive"} />
-									</TableCell>
-									<TableCell className="py-3 px-4 font-mono">
-										{`${webhook.secret.slice(0, 10)}********`}
-									</TableCell>
-									<TableCell className="flex items-center gap-2 py-3 px-4 text-sm text-gray-300">
-										{moment(webhook.createdAt).format("MMM D, YYYY • h:mm A")}
-										<span className="text-xs text-gray-500">
-											({moment(webhook.createdAt).fromNow()})
-										</span>
-										<ExternalLink
-											size={14}
-											className="cursor-pointer text-gray-400 hover:text-white"
-										/>
-									</TableCell>
-									<TableCell className="py-3 px-4">
-										<Button className="bg-gray-700/20" onClick={() => handleDelete(webhook.id)}>
-											<Trash variant="Bulk" size={16} />
-										</Button>
-									</TableCell>
-								</TableRow>
-							))}
-						</TableBody>
-					</Table>
+						)}
+						{error && (
+							<p role="alert" className="text-red-300">
+								{error}
+							</p>
+						)}
+					</form>
+				</ModularModals>
+			}
+		>
+			<div className="space-y-6">
+				{error && (
+					<p role="alert" className="text-red-300">
+						{error}
+					</p>
+				)}
+				{secret && (
+					<ModularCard title="New signing secret" content>
+						<p className="mb-3 text-sm text-gray-400">
+							Shown only when created. Save this secret in your endpoint server.
+						</p>
+						<code className="break-all text-sm">{secret}</code>
+						<Button
+							variant="outline"
+							className="ml-3"
+							onClick={() => void navigator.clipboard.writeText(secret)}
+						>
+							Copy
+						</Button>
+					</ModularCard>
+				)}
+				<div className="flex gap-3">
+					<Button variant="outline" disabled={busy || !project} onClick={() => void run(refresh)}>
+						Refresh deliveries
+					</Button>
+					{environment === "sandbox" && (
+						<Button
+							disabled={busy || !project}
+							onClick={() => {
+								if (project)
+									void run(async () => {
+										await sendTestEvent(project.id);
+									});
+							}}
+						>
+							Send test event
+						</Button>
+					)}
 				</div>
+				<ModularCard title="Webhook endpoints" content>
+					<div className="overflow-x-auto">
+						<Table>
+							<TableHeader>
+								<TableRow>
+									{["Endpoint ID", "Events", "Endpoint", "Status", "Health", "Action"].map(
+										(label) => (
+											<TableHead key={label}>{label}</TableHead>
+										),
+									)}
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{endpoints.map((endpoint) => (
+									<TableRow key={endpoint.id}>
+										<TableCell className="font-mono text-xs">{endpoint.id}</TableCell>
+										<TableCell>
+											{endpoint.eventTypes?.length ? endpoint.eventTypes.join(", ") : "All events"}
+										</TableCell>
+										<TableCell className="max-w-64 truncate">{endpoint.url}</TableCell>
+										<TableCell>
+											<Badge variant="outline">{endpoint.isActive ? "Active" : "Inactive"}</Badge>
+										</TableCell>
+										<TableCell>
+											{deliveries.find((delivery) => delivery.webhookId === endpoint.id)?.status ??
+												"No deliveries"}
+										</TableCell>
+										<TableCell>
+											<Button
+												size="sm"
+												variant="outline"
+												disabled={busy || !endpoint.isActive}
+												onClick={() => {
+													if (project)
+														void run(async () => {
+															await apiRequest(
+																`/projects/${project.id}/financial/webhooks/${endpoint.id}`,
+																{ method: "DELETE" },
+															);
+														});
+												}}
+											>
+												Deactivate
+											</Button>
+										</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+					</div>
+					{!endpoints.length && (
+						<p className="py-6 text-sm text-gray-400">
+							{loading ? "Loading endpoints…" : "No webhook endpoints in this environment."}
+						</p>
+					)}
+				</ModularCard>
+				<ModularCard title="Delivery history" content>
+					<div className="overflow-x-auto">
+						<Table>
+							<TableHeader>
+								<TableRow>
+									{["Delivery ID", "Event ID", "Status", "Attempts", "Action"].map((label) => (
+										<TableHead key={label}>{label}</TableHead>
+									))}
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{deliveries.map((delivery) => (
+									<TableRow key={delivery.id}>
+										<TableCell className="font-mono text-xs">{delivery.id}</TableCell>
+										<TableCell className="font-mono text-xs">{delivery.eventId}</TableCell>
+										<TableCell>{delivery.status}</TableCell>
+										<TableCell>{delivery.attempts}</TableCell>
+										<TableCell>
+											<div className="flex gap-2">
+												<Button size="sm" variant="outline" onClick={() => setSelected(delivery)}>
+													Inspect
+												</Button>
+												<Button
+													size="sm"
+													disabled={busy}
+													onClick={() => {
+														if (project)
+															void run(async () => {
+																await replayDelivery(project.id, delivery.id);
+															});
+													}}
+												>
+													Replay
+												</Button>
+											</div>
+										</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+					</div>
+					{!deliveries.length && (
+						<p className="py-6 text-sm text-gray-400">
+							No deliveries yet. Events will appear after the delivery worker processes them.
+						</p>
+					)}
+				</ModularCard>
+				{selected && (
+					<ModularCard title="Delivery response inspection" content>
+						<SyntaxCode
+							code={JSON.stringify(selected, null, 2)}
+							language="json"
+							label="delivery.json"
+						/>
+					</ModularCard>
+				)}
 			</div>
 		</DashboardLayout>
 	);
-};
+}
 
-export default WebhooksPage;
+export default function WebhooksPage() {
+	const environment = useEnvironment();
+	const projectId = useSelectedProjectId();
+
+	return <WebhooksContent key={`${projectId}:${environment}`} />;
+}
