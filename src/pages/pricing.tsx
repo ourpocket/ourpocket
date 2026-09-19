@@ -2,6 +2,7 @@ import { DeveloperCta } from "@/components/module/landing/developer-cta";
 import { LandingHeader } from "@/components/module/landing/landing-header";
 import { Button } from "@/components/ui/button";
 import { Typography } from "@/components/ui/typography";
+import { isPrivateBeta } from "@/lib/beta-access";
 import { Link } from "@tanstack/react-router";
 import { Check, Sparkles } from "lucide-react";
 import "@/components/module/landing/landing.css";
@@ -130,7 +131,11 @@ function PricingPage() {
 								asChild
 								className={plan.featured ? "mt-8" : "mt-8 !bg-white text-black hover:!bg-white/90"}
 							>
-								<Link to="/auth/register">{plan.cta}</Link>
+								{isPrivateBeta ? (
+									<a href="/#beta">Request beta access</a>
+								) : (
+									<Link to="/auth/register">{plan.cta}</Link>
+								)}
 							</Button>
 						</article>
 					))}
