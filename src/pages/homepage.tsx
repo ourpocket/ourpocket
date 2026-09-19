@@ -1,4 +1,6 @@
+import { BetaProgram } from "@/components/module/landing/beta-program";
 import { DeveloperCta } from "@/components/module/landing/developer-cta";
+import { DeveloperReasons } from "@/components/module/landing/developer-reasons";
 import { InfrastructureGrid } from "@/components/module/landing/infrastructure-grid";
 import { LandingHeader } from "@/components/module/landing/landing-header";
 import { LandingHero } from "@/components/module/landing/landing-hero";
@@ -15,7 +17,9 @@ const Homepage = () => (
 			<ProviderMarquee />
 		</div>
 		<InfrastructureGrid />
+		<DeveloperReasons />
 		<WorkflowSection />
+		<BetaProgram />
 		<DeveloperCta />
 	</main>
 );

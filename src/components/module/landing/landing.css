@@ -1398,3 +1398,185 @@ body {
     }
   }
 }
+
+.workflow-section .workflow-intro h2,
+.workflow-section .workflow-card h3 {
+  color: var(--color-light-ink) !important;
+}
+.workflow-section .workflow-intro .workflow-reveal-text,
+.workflow-section .workflow-card > p,
+.workflow-section .workflow-card > span {
+  color: var(--color-light-muted) !important;
+}
+
+.developer-reasons {
+  padding-block: var(--space-4xl);
+  display: grid;
+  grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
+  gap: var(--space-4xl);
+  align-items: start;
+}
+.developer-reasons-intro {
+  position: sticky;
+  inset-block-start: 7rem;
+}
+.developer-reasons-kicker,
+.beta-program-kicker {
+  display: block;
+  color: var(--color-accent) !important;
+  font-family: var(--font-code);
+  letter-spacing: 0.04em;
+}
+.developer-reasons-title {
+  max-width: 11ch;
+  margin: var(--space-md) 0 0;
+  color: var(--color-ink-strong) !important;
+  font-size: var(--text-display-s);
+  line-height: 1;
+}
+.developer-reasons-list {
+  border-block-start: var(--rule-thin) solid var(--color-rule);
+}
+.developer-reason {
+  min-height: 12.5rem;
+  padding: var(--space-xl) 0;
+  border-block-end: var(--rule-thin) solid var(--color-rule);
+}
+.developer-reason-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--color-accent);
+}
+.developer-reason-topline span {
+  color: var(--color-subtle) !important;
+  font-family: var(--font-code);
+}
+.developer-reason-title {
+  margin: var(--space-lg) 0 var(--space-sm);
+  color: var(--color-ink-strong) !important;
+  font-size: var(--text-lg);
+}
+.developer-reason-copy {
+  max-width: 49ch;
+  margin: 0;
+  color: var(--color-muted) !important;
+}
+
+.beta-program {
+  margin-block: var(--space-4xl);
+  padding-block: var(--space-4xl);
+  border-block: var(--rule-thin) solid var(--color-rule);
+  background: var(--color-paper-high);
+}
+.beta-program-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(20rem, 0.8fr);
+  gap: var(--space-4xl);
+  align-items: center;
+}
+.beta-program-title {
+  max-width: 13ch;
+  margin: var(--space-md) 0 0;
+  color: var(--color-ink-strong) !important;
+  font-size: var(--text-display-s);
+  line-height: 1;
+}
+.beta-program-panel {
+  padding: var(--space-xl);
+  border: var(--rule-thin) solid var(--color-rule-strong);
+  background: var(--color-paper);
+}
+.beta-program-panel > svg {
+  color: var(--color-accent);
+}
+.beta-program-copy {
+  max-width: 42ch;
+  margin: var(--space-lg) 0;
+  color: var(--color-muted) !important;
+}
+.beta-program-note {
+  display: block;
+  margin-block-start: var(--space-md);
+  color: var(--color-subtle) !important;
+}
+
+@media (max-width: 60rem) {
+  .developer-reasons,
+  .beta-program-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-2xl);
+  }
+  .developer-reasons-intro {
+    position: static;
+  }
+}
+
+@media (max-width: 40rem) {
+  .developer-reasons,
+  .beta-program {
+    padding-block: var(--space-3xl);
+  }
+  .developer-reason,
+  .beta-program-panel {
+    padding: var(--space-lg) 0;
+  }
+  .beta-program-panel {
+    padding: var(--space-lg);
+  }
+}
+
+.beta-program-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-md);
+}
+.beta-program-form label {
+  display: grid;
+  gap: var(--space-xs);
+}
+.beta-program-form label:first-child,
+.beta-program-form label:last-of-type,
+.beta-program-form button {
+  grid-column: 1 / -1;
+}
+.beta-program-form label > span {
+  color: var(--color-muted) !important;
+}
+.beta-program-form input,
+.beta-program-form select {
+  width: 100%;
+  min-height: 2.75rem;
+  padding-inline: var(--space-sm);
+  border: var(--rule-thin) solid var(--color-rule-strong);
+  border-radius: var(--radius-sm);
+  outline: none;
+  background: var(--color-paper-raised);
+  color: var(--color-ink);
+  font: var(--text-sm) var(--font-body);
+}
+.beta-program-form input:focus,
+.beta-program-form select:focus {
+  border-color: var(--color-focus);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--color-focus) 18%, transparent);
+}
+.beta-program-form button {
+  justify-content: center;
+  margin-block-start: var(--space-xs);
+}
+.beta-program-form button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+.beta-program-confirmation > svg,
+.beta-program-error {
+  color: var(--color-accent) !important;
+}
+.beta-program-confirmation-title {
+  margin: var(--space-lg) 0 0;
+  color: var(--color-ink-strong) !important;
+}
+.beta-program-error {
+  display: block;
+  margin-block-start: var(--space-md);
+}

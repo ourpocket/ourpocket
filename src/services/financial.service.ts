@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { ApiTransportError, apiRequest } from "./api-client";
 
+const paymentProviderSchema = z.enum(["paystack", "flutterwave", "mono"]);
+
 const resourceSchema = z.object({
 	id: z.uuid(),
 	projectId: z.uuid(),
@@ -82,7 +84,7 @@ export async function postFinancialResource(
 }
 
 const transientCheckoutSchema = z.object({
-	provider: z.enum(["paystack", "flutterwave", "mono"]),
+	provider: paymentProviderSchema,
 	reference: z.string(),
 	checkoutUrl: z.url(),
 });
@@ -152,7 +154,7 @@ const providerOverviewSectionSchema = <T extends z.ZodType>(schema: T) =>
 	});
 
 export const providerOverviewSchema = z.object({
-	provider: z.enum(["paystack", "flutterwave", "mono"]),
+	provider: paymentProviderSchema,
 	fetchedAt: z.string(),
 	source: z.literal("live"),
 	capabilities: z.array(z.string()),
@@ -201,7 +203,7 @@ const routingPolicySchema = z.object({
 });
 
 const providerHealthSchema = z.object({
-	provider: z.enum(["paystack", "flutterwave"]),
+	provider: paymentProviderSchema,
 	connected: z.boolean(),
 	status: z.enum(["unknown", "healthy", "degraded", "down"]),
 	successRate: z.string().nullable(),
