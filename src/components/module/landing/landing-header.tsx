@@ -4,7 +4,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRight, ChevronDown, Github, Menu, X } from "lucide-react";
 import { useState } from "react";
 
-const navItems = ["Product", "Solutions", "Developers", "Resources", "Company", "Pricing"];
+const navItems = ["Product", "Solutions", "Pricing"];
 
 export function LandingHeader() {
 	const [menuOpen, setMenuOpen] = useState(false);
@@ -34,7 +34,6 @@ export function LandingHeader() {
 							item === "Pricing" ? (
 								<Link key={item} to="/pricing" onClick={() => setMenuOpen(false)}>
 									{item}
-									<ChevronDown size={13} />
 								</Link>
 							) : (
 								<a
@@ -49,7 +48,6 @@ export function LandingHeader() {
 									onClick={() => setMenuOpen(false)}
 								>
 									{item}
-									<ChevronDown size={13} />
 								</a>
 							),
 						)}
