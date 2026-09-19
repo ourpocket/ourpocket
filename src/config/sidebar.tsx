@@ -31,6 +31,12 @@ export const mainMenuItems: SidebarItem[] = [
 	},
 	{
 		icon: <WalletAdd size={20} variant={"Bulk"} />,
+		label: "Payments",
+		href: "/dashboard/payments",
+		isActive: <WalletAdd size={20} variant={"Bold"} color={"orange"} />,
+	},
+	{
+		icon: <WalletAdd size={20} variant={"Bulk"} />,
 		label: "Wallets",
 		href: "/dashboard/wallets",
 		isActive: <WalletAdd size={20} variant={"Bold"} color={"orange"} />,
@@ -41,6 +47,12 @@ export const mainMenuItems: SidebarItem[] = [
 		label: "Providers",
 		href: "/dashboard/wallet-providers",
 		isActive: <Cloud size={20} variant={"Bold"} color={"orange"} />,
+	},
+	{
+		icon: <DocumentText size={20} variant="Bulk" />,
+		label: "Routing",
+		href: "/dashboard/routing",
+		isActive: <DocumentText size={20} variant="Bold" color="orange" />,
 	},
 	{
 		icon: <Code size={20} variant={"Bulk"} />,

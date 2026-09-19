@@ -11,8 +11,8 @@ export function InfrastructureGrid() {
 					from Sandbox to production.
 				</Typography>
 				<Typography>
-					Build without provider credentials, then use the same normalized payment model with
-					Paystack or Flutterwave when you go live.
+					Build with deterministic simulators, connect customer-owned providers, and operate the
+					same normalized model from first request to reconciliation.
 				</Typography>
 			</div>
 			<div className="infrastructure-grid">
@@ -22,7 +22,7 @@ export function InfrastructureGrid() {
 						<span>Unified API</span>
 					</div>
 					<Typography as="h3" variant="heading">
-						One contract for payments and refunds.
+						One contract across payments, refunds, wallets, and events.
 					</Typography>
 					<div className="api-lines">
 						<p>
@@ -39,10 +39,10 @@ export function InfrastructureGrid() {
 				<article className="infra-card infra-card-routing landing-reveal">
 					<div className="card-heading">
 						<RefreshCw size={22} />
-						<span>Provider control</span>
+						<span>Smart routing</span>
 					</div>
 					<Typography as="h3" variant="heading">
-						Choose the connected provider for each production payment.
+						Route by health, success rate, fees, latency, or your own priority.
 					</Typography>
 					<div className="routing-visual">
 						<span>Payment</span>
@@ -57,10 +57,10 @@ export function InfrastructureGrid() {
 				<article className="infra-card infra-card-control landing-reveal">
 					<div className="card-heading">
 						<WalletCards size={22} />
-						<span>Sandbox wallets</span>
+						<span>Wallet infrastructure</span>
 					</div>
 					<Typography as="h3" variant="heading">
-						Test funding, debits, balances, and internal transfers safely.
+						Simulate fiat balances, then create production wallets with Turnkey or Privy.
 					</Typography>
 					<div className="balance-panel">
 						<small>Available balance</small>
@@ -77,7 +77,7 @@ export function InfrastructureGrid() {
 						<span>Observability</span>
 					</div>
 					<Typography as="h3" variant="heading">
-						Trace requests, events, and signed webhook deliveries.
+						Trace requests, routing decisions, unknown outcomes, and webhook deliveries.
 					</Typography>
 					<div className="activity-chart">
 						<i />

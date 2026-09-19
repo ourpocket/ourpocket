@@ -19,6 +19,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { Typography } from "@/components/ui/typography";
 import { useCurrentProject } from "@/hooks/use-current-project";
 import { API_BASE_URL } from "@/services/api-client";
 import { listFinancialResources } from "@/services/financial.service";
@@ -75,7 +76,13 @@ function Fields({
 	);
 }
 
-export default function FinancialOperations({ wallets = false }: { wallets?: boolean }) {
+export default function FinancialOperations({
+	wallets = false,
+	readOnly = false,
+}: {
+	wallets?: boolean;
+	readOnly?: boolean;
+}) {
 	const { project, environment } = useCurrentProject();
 	const [items, setItems] = useState<FinancialResource[]>([]);
 	const [error, setError] = useState<string | null>(null);
@@ -88,6 +95,8 @@ export default function FinancialOperations({ wallets = false }: { wallets?: boo
 	const [currency, setCurrency] = useState("NGN");
 	const [email, setEmail] = useState("");
 	const [provider, setProvider] = useState<"paystack" | "flutterwave">("paystack");
+	const [walletProvider, setWalletProvider] = useState<"turnkey" | "privy">("turnkey");
+	const [chain, setChain] = useState<"ethereum" | "solana">("ethereum");
 	const [callbackUrl, setCallbackUrl] = useState("");
 	const [resourceId, setResourceId] = useState("");
 	const [destination, setDestination] = useState("");
@@ -193,7 +202,15 @@ export default function FinancialOperations({ wallets = false }: { wallets?: boo
 				return pocket.refunds.create(refund, options);
 			}
 
-			if (operation === "create_wallet") return pocket.wallets.create({ currency }, options);
+			if (operation === "create_wallet")
+				return pocket.wallets.create(
+					{
+						currency,
+						provider: environment === "production" ? walletProvider : undefined,
+						chain: environment === "production" ? chain : undefined,
+					},
+					options,
+				);
 
 			if (operation === "fund") return pocket.wallets.fund(resourceId, input, options);
 
@@ -213,14 +230,14 @@ export default function FinancialOperations({ wallets = false }: { wallets?: boo
 				(view === "all" || item.kind === view),
 	);
 
-	const unavailable = wallets && environment === "production";
+	const unavailable = wallets && environment === "production" && operation !== "create_wallet";
 
 	const endpoint = (() => {
 		if (operation === "payment") return "/payments";
 
 		if (operation === "refund") return "/refunds";
 
-		if (operation === "create_wallet") return "/sandbox/wallets";
+		if (operation === "create_wallet") return "/wallets";
 
 		if (operation === "transfer") return "/sandbox/transfers";
 
@@ -244,7 +261,12 @@ export default function FinancialOperations({ wallets = false }: { wallets?: boo
 				scenario: environment === "sandbox" ? scenario : undefined,
 			};
 
-		if (operation === "create_wallet") return { currency };
+		if (operation === "create_wallet")
+			return {
+				currency,
+				provider: environment === "production" ? walletProvider : undefined,
+				chain: environment === "production" ? chain : undefined,
+			};
 
 		if (operation === "transfer")
 			return {
@@ -277,13 +299,13 @@ export default function FinancialOperations({ wallets = false }: { wallets?: boo
 
 	return (
 		<div className="space-y-6">
-			<p className="max-w-3xl text-sm leading-6 text-white/45">
+			<Typography className="max-w-3xl">
 				{unavailable
-					? "Production wallet infrastructure is not available yet. Switch to Sandbox to test fiat wallets and balances."
+					? "Funding, debits, and internal transfers are simulated in Sandbox. Production wallet creation uses your connected wallet provider."
 					: environment === "sandbox"
 						? "Simulated financial infrastructure. No real money moves."
-						: "Operations use your connected provider account. Checkout remains pending until verified."}
-			</p>
+						: "Operations use your connected provider account. Routing decisions and uncertain outcomes remain inspectable."}
+			</Typography>
 			{error && (
 				<div
 					role="alert"
@@ -292,103 +314,28 @@ export default function FinancialOperations({ wallets = false }: { wallets?: boo
 					{error}
 				</div>
 			)}
-			<div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-				<ModularCard title={wallets ? "Sandbox wallet operation" : "Financial operation"} content>
-					<form className="grid grid-cols-1 gap-4 sm:grid-cols-2" onSubmit={submit}>
-						<Label className="grid gap-2 text-xs font-medium text-white/65">
-							Operation
-							<Select
-								value={operation}
-								onValueChange={(value) => {
-									const selected = operations.find((operation) => operation === value);
-
-									if (selected) setOperation(selected);
-								}}
-							>
-								<SelectTrigger aria-label="Operation">
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									{(wallets
-										? ["create_wallet", "fund", "debit", "transfer"]
-										: ["payment", "refund"]
-									).map((value) => (
-										<SelectItem key={value} value={value}>
-											{value.replaceAll("_", " ")}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</Label>
-						<Fields
-							label={`${environment} project API key`}
-							type="password"
-							value={apiKey}
-							onChange={setApiKey}
-							className="sm:col-span-2"
-						/>
-						{operation !== "create_wallet" && (
-							<Fields label="Amount (minor units)" value={amount} onChange={setAmount} />
-						)}
-						<Fields label="Currency" value={currency} onChange={setCurrency} />
-						{operation === "payment" && (
-							<>
-								<Fields label="Customer email" type="email" value={email} onChange={setEmail} />
-								<Label className="grid gap-2 text-xs font-medium text-white/65">
-									Provider
-									<Select
-										value={provider}
-										onValueChange={(value) => {
-											if (value === "paystack" || value === "flutterwave") setProvider(value);
-										}}
-									>
-										<SelectTrigger aria-label="Provider">
-											<SelectValue />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="paystack">Paystack</SelectItem>
-											<SelectItem value="flutterwave">Flutterwave</SelectItem>
-										</SelectContent>
-									</Select>
-								</Label>
-								<Label className="grid gap-2 text-xs font-medium text-white/65 sm:col-span-2">
-									Checkout return URL
-									<Input
-										type="url"
-										value={callbackUrl}
-										onChange={(event) => setCallbackUrl(event.target.value)}
-										placeholder="https://yourapp.com/checkout"
-										required={environment === "production" && provider === "flutterwave"}
-									/>
-								</Label>
-							</>
-						)}
-						{["refund", "fund", "debit", "transfer"].includes(operation) && (
-							<Fields
-								label={operation === "refund" ? "Payment ID" : "Wallet ID"}
-								value={resourceId}
-								onChange={setResourceId}
-							/>
-						)}
-						{operation === "transfer" && (
-							<Fields label="Destination wallet ID" value={destination} onChange={setDestination} />
-						)}
-						{environment === "sandbox" && operation !== "create_wallet" && (
+			{!readOnly && (
+				<div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+					<ModularCard title={wallets ? "Wallet operation" : "Financial operation"} content>
+						<form className="grid grid-cols-1 gap-4 sm:grid-cols-2" onSubmit={submit}>
 							<Label className="grid gap-2 text-xs font-medium text-white/65">
-								Simulation
+								Operation
 								<Select
-									value={scenario}
+									value={operation}
 									onValueChange={(value) => {
-										const selected = scenarioOptions.find((option) => option === value);
+										const selected = operations.find((operation) => operation === value);
 
-										if (selected) setScenario(selected);
+										if (selected) setOperation(selected);
 									}}
 								>
-									<SelectTrigger aria-label="Simulation">
+									<SelectTrigger aria-label="Operation">
 										<SelectValue />
 									</SelectTrigger>
 									<SelectContent>
-										{scenarioOptions.map((value) => (
+										{(wallets
+											? ["create_wallet", "fund", "debit", "transfer"]
+											: ["payment", "refund"]
+										).map((value) => (
 											<SelectItem key={value} value={value}>
 												{value.replaceAll("_", " ")}
 											</SelectItem>
@@ -396,55 +343,177 @@ export default function FinancialOperations({ wallets = false }: { wallets?: boo
 									</SelectContent>
 								</Select>
 							</Label>
-						)}
-						<Fields
-							label="Idempotency key"
-							value={idempotencyKey}
-							onChange={setIdempotencyKey}
-							className="sm:col-span-2"
-						/>
-						<div className="flex flex-wrap gap-3 border-t border-white/[0.07] pt-4 sm:col-span-2">
-							<Button type="submit" disabled={busy || unavailable || !project}>
-								{busy ? "Sending…" : "Run operation"}
-							</Button>
-							<Button
-								variant="outline"
-								type="button"
-								disabled={busy}
-								onClick={() => setIdempotencyKey(crypto.randomUUID())}
-							>
-								New operation key
-							</Button>
+							<Fields
+								label={`${environment} project API key`}
+								type="password"
+								value={apiKey}
+								onChange={setApiKey}
+								className="sm:col-span-2"
+							/>
+							{operation !== "create_wallet" && (
+								<Fields label="Amount (minor units)" value={amount} onChange={setAmount} />
+							)}
+							<Fields label="Currency" value={currency} onChange={setCurrency} />
+							{operation === "create_wallet" && environment === "production" && (
+								<>
+									<Label className="grid gap-2 text-xs font-medium text-white/65">
+										Wallet provider
+										<Select
+											value={walletProvider}
+											onValueChange={(value) => {
+												if (value === "turnkey" || value === "privy") setWalletProvider(value);
+											}}
+										>
+											<SelectTrigger aria-label="Wallet provider">
+												<SelectValue />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="turnkey">Turnkey</SelectItem>
+												<SelectItem value="privy">Privy</SelectItem>
+											</SelectContent>
+										</Select>
+									</Label>
+									<Label className="grid gap-2 text-xs font-medium text-white/65">
+										Network
+										<Select
+											value={chain}
+											onValueChange={(value) => {
+												if (value === "ethereum" || value === "solana") setChain(value);
+											}}
+										>
+											<SelectTrigger aria-label="Network">
+												<SelectValue />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="ethereum">Ethereum</SelectItem>
+												<SelectItem value="solana">Solana</SelectItem>
+											</SelectContent>
+										</Select>
+									</Label>
+								</>
+							)}
+							{operation === "payment" && (
+								<>
+									<Fields label="Customer email" type="email" value={email} onChange={setEmail} />
+									<Label className="grid gap-2 text-xs font-medium text-white/65">
+										Provider
+										<Select
+											value={provider}
+											onValueChange={(value) => {
+												if (value === "paystack" || value === "flutterwave") setProvider(value);
+											}}
+										>
+											<SelectTrigger aria-label="Provider">
+												<SelectValue />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="paystack">Paystack</SelectItem>
+												<SelectItem value="flutterwave">Flutterwave</SelectItem>
+											</SelectContent>
+										</Select>
+									</Label>
+									<Label className="grid gap-2 text-xs font-medium text-white/65 sm:col-span-2">
+										Checkout return URL
+										<Input
+											type="url"
+											value={callbackUrl}
+											onChange={(event) => setCallbackUrl(event.target.value)}
+											placeholder="https://yourapp.com/checkout"
+											required={environment === "production" && provider === "flutterwave"}
+										/>
+									</Label>
+								</>
+							)}
+							{["refund", "fund", "debit", "transfer"].includes(operation) && (
+								<Fields
+									label={operation === "refund" ? "Payment ID" : "Wallet ID"}
+									value={resourceId}
+									onChange={setResourceId}
+								/>
+							)}
+							{operation === "transfer" && (
+								<Fields
+									label="Destination wallet ID"
+									value={destination}
+									onChange={setDestination}
+								/>
+							)}
+							{environment === "sandbox" && operation !== "create_wallet" && (
+								<Label className="grid gap-2 text-xs font-medium text-white/65">
+									Simulation
+									<Select
+										value={scenario}
+										onValueChange={(value) => {
+											const selected = scenarioOptions.find((option) => option === value);
+
+											if (selected) setScenario(selected);
+										}}
+									>
+										<SelectTrigger aria-label="Simulation">
+											<SelectValue />
+										</SelectTrigger>
+										<SelectContent>
+											{scenarioOptions.map((value) => (
+												<SelectItem key={value} value={value}>
+													{value.replaceAll("_", " ")}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+								</Label>
+							)}
+							<Fields
+								label="Idempotency key"
+								value={idempotencyKey}
+								onChange={setIdempotencyKey}
+								className="sm:col-span-2"
+							/>
+							<div className="flex flex-wrap gap-3 border-t border-white/[0.07] pt-4 sm:col-span-2">
+								<Button type="submit" disabled={busy || unavailable || !project}>
+									{busy ? "Sending…" : "Run operation"}
+								</Button>
+								<Button
+									variant="outline"
+									type="button"
+									disabled={busy}
+									onClick={() => setIdempotencyKey(crypto.randomUUID())}
+								>
+									New operation key
+								</Button>
+							</div>
+						</form>
+					</ModularCard>
+					<ModularCard
+						title={environment === "sandbox" ? "Sandbox request" : "API request"}
+						content
+					>
+						<div className="space-y-4">
+							<SyntaxCode
+								code={requestPreview}
+								language="shellscript"
+								label="request.sh"
+								maxHeight="20rem"
+							/>
+							<SyntaxCode
+								code={resultPreview}
+								language="json"
+								label="response.json"
+								maxHeight="20rem"
+							/>
 						</div>
-					</form>
-				</ModularCard>
-				<ModularCard title={environment === "sandbox" ? "Sandbox request" : "API request"} content>
-					<div className="space-y-4">
-						<SyntaxCode
-							code={requestPreview}
-							language="shellscript"
-							label="request.sh"
-							maxHeight="20rem"
-						/>
-						<SyntaxCode
-							code={resultPreview}
-							language="json"
-							label="response.json"
-							maxHeight="20rem"
-						/>
-					</div>
-					{result?.kind === "payment" && result.details.checkoutUrl && (
-						<a
-							className="mt-4 inline-block text-sm text-orange-400 underline"
-							href={result.details.checkoutUrl}
-							target="_blank"
-							rel="noopener noreferrer"
-						>
-							Open hosted checkout
-						</a>
-					)}
-				</ModularCard>
-			</div>
+						{result?.kind === "payment" && result.details.checkoutUrl && (
+							<a
+								className="mt-4 inline-block text-sm text-orange-400 underline"
+								href={result.details.checkoutUrl}
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								Open hosted checkout
+							</a>
+						)}
+					</ModularCard>
+				</div>
+			)}
 			<ModularCard
 				title={wallets ? "Wallets and transfers" : "Payments and refunds"}
 				action={<span className="text-xs font-normal text-white/40">{visible.length} records</span>}
@@ -505,7 +574,7 @@ export default function FinancialOperations({ wallets = false }: { wallets?: boo
 											>
 												Inspect
 											</Button>
-											{item.status === "pending" && (
+											{!readOnly && ["pending", "unknown"].includes(item.status) && (
 												<>
 													{environment === "sandbox" ? (
 														<>
@@ -562,13 +631,15 @@ export default function FinancialOperations({ wallets = false }: { wallets?: boo
 						<div className="flex size-11 items-center justify-center rounded-xl border border-white/[0.07] bg-white/[0.025] text-white/25">
 							<Braces className="size-5" />
 						</div>
-						<p className="text-sm font-medium text-white/65">
+						<Typography variant="subheading">
 							{loading ? "Loading operations…" : "No operations yet"}
-						</p>
+						</Typography>
 						{!loading && (
-							<p className="max-w-sm text-xs leading-5 text-white/35">
-								Run your first operation above. It will appear here with its normalized status.
-							</p>
+							<Typography variant="caption" className="max-w-sm">
+								{readOnly
+									? "Operations appear here as they move through the control plane."
+									: "Run your first operation above. It will appear here with its normalized status."}
+							</Typography>
 						)}
 					</div>
 				)}

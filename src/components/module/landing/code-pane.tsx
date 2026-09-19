@@ -13,16 +13,19 @@ const snippets: Record<Language, ReactNode[]> = {
 		<span key="client">
 			<i>const</i> pocket = <i>new</i> <b>OurPocket</b>({"{ apiKey }"});
 		</span>,
+		<span key="customer">
+			<i>const</i> customer = <i>await</i> pocket.customers.<em>create</em>(...);
+		</span>,
 		<span key="payment">
 			<i>await</i> pocket.payments.<em>create</em>({"{"}
 		</span>,
 		<span key="amount">
 			{" "}
-			amount: <s>"50000"</s>, currency: <s>"NGN"</s>,
+			customer: customer.id, amount: <s>"50000"</s>,
 		</span>,
-		<span key="provider">
+		<span key="currency">
 			{" "}
-			provider: <s>"paystack"</s>,
+			currency: <s>"NGN"</s>, provider: <s>"paystack"</s>,
 		</span>,
 		<span key="scenario">
 			{" "}
@@ -46,7 +49,7 @@ const snippets: Record<Language, ReactNode[]> = {
 		</span>,
 		<span key="body">
 			{" "}
-			-d <s>{'\'{"amount":"50000","currency":"NGN"}\''}</s>
+			-d <s>{'\'{"customer":"<uuid>","amount":"50000","currency":"NGN"}\''}</s>
 		</span>,
 	],
 	JSON: [
@@ -73,8 +76,8 @@ const snippets: Record<Language, ReactNode[]> = {
 
 const plainSnippets: Record<Language, string> = {
 	TypeScript:
-		'import { OurPocket } from "@ourpocket/sdk";\n\nconst pocket = new OurPocket({ apiKey });\nawait pocket.payments.create({ amount: "50000", currency: "NGN", provider: "paystack", scenario: "success" }, { idempotencyKey });',
-	cURL: 'curl -X POST /v1/payments \\\n  -H "Authorization: Bearer $OURPOCKET_KEY" \\\n  -H "Idempotency-Key: checkout_8462" \\\n  -d \'{"amount":"50000","currency":"NGN"}\'',
+		'import { OurPocket } from "@ourpocket/sdk";\n\nconst pocket = new OurPocket({ apiKey });\nconst customer = await pocket.customers.create({ email: "ada@example.com" }, { idempotencyKey: "customer_8462" });\nawait pocket.payments.create({ customer: customer.id, amount: "50000", currency: "NGN", provider: "paystack", scenario: "success" }, { idempotencyKey });',
+	cURL: 'curl -X POST /v1/payments \\\n  -H "Authorization: Bearer $OURPOCKET_KEY" \\\n  -H "Idempotency-Key: checkout_8462" \\\n  -d \'{"customer":"<uuid>","amount":"50000","currency":"NGN"}\'',
 	JSON: '{\n  "kind": "payment",\n  "status": "completed",\n  "environment": "sandbox",\n  "currency": "NGN"\n}',
 };
 

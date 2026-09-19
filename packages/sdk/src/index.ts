@@ -5,10 +5,10 @@ export const resourceSchema = z.object({
 	projectId: z.uuid(),
 	environment: z.enum(["sandbox", "production"]),
 	kind: z.enum(["customer", "payment", "refund", "wallet", "transfer"]),
-	status: z.enum(["pending", "completed", "failed"]),
+	status: z.enum(["pending", "unknown", "completed", "failed"]),
 	amount: z.string().nullable(),
 	currency: z.string().nullable(),
-	provider: z.enum(["paystack", "flutterwave"]).nullable(),
+	provider: z.enum(["paystack", "flutterwave", "turnkey", "privy"]).nullable(),
 	providerReference: z.string().nullable(),
 	parentId: z.string().nullable(),
 	details: z.record(z.string(), z.unknown()),
@@ -37,7 +37,12 @@ export const refundSchema = resourceSchema.extend({ kind: z.literal("refund") })
 
 export const walletSchema = resourceSchema.extend({
 	kind: z.literal("wallet"),
-	details: z.object({ balance: z.string() }),
+	details: z.object({
+		balance: z.string(),
+		address: z.string().optional(),
+		chain: z.enum(["ethereum", "solana"]).optional(),
+		custody: z.enum(["simulated", "provider"]).optional(),
+	}),
 });
 
 export const transferSchema = resourceSchema.extend({ kind: z.literal("transfer") });
@@ -84,6 +89,10 @@ export type Transfer = z.infer<typeof transferSchema>;
 
 export type Provider = "paystack" | "flutterwave";
 
+export type WalletProvider = "turnkey" | "privy";
+
+export type FinancialProvider = Provider | WalletProvider;
+
 export type Environment = "sandbox" | "production";
 
 export type Scenario =
@@ -115,6 +124,8 @@ export interface RefundInput {
 export interface WalletInput {
 	currency: string;
 	customer?: string;
+	provider?: WalletProvider;
+	chain?: "ethereum" | "solana";
 }
 
 export interface TransferInput extends AmountInput {
@@ -148,11 +159,43 @@ type RequestBody =
 	| WalletInput
 	| TransferInput
 	| AmountInput
+	| {
+			strategy: "best_success_rate" | "lowest_fees" | "fastest_response" | "custom_priority";
+			providerPriority: Provider[];
+			requireHealthy: boolean;
+			safeFailover: boolean;
+	  }
 	| { status: "completed" | "failed" };
 
 interface InternalRequestOptions extends RequestOptions {
 	idempotencyKey?: string;
 }
+
+export const routingPolicySchema = z.object({
+	id: z.uuid().nullable(),
+	projectId: z.uuid(),
+	environment: z.enum(["sandbox", "production"]),
+	strategy: z.enum(["best_success_rate", "lowest_fees", "fastest_response", "custom_priority"]),
+	providerPriority: z.array(z.enum(["paystack", "flutterwave"])),
+	requireHealthy: z.boolean(),
+	safeFailover: z.boolean(),
+});
+
+export type RoutingPolicy = z.infer<typeof routingPolicySchema>;
+
+export const reconciliationRunSchema = z.object({
+	id: z.uuid(),
+	projectId: z.uuid(),
+	environment: z.enum(["sandbox", "production"]),
+	status: z.enum(["running", "completed", "failed"]),
+	inspected: z.number(),
+	resolved: z.number(),
+	unresolved: z.number(),
+	resourceIds: z.array(z.uuid()),
+	requestId: z.uuid(),
+	createdAt: z.string(),
+	updatedAt: z.string(),
+});
 
 export const eventSchema = z.object({
 	id: z.uuid(),
@@ -218,7 +261,6 @@ export class OurPocket {
 		if (options.idempotencyKey) headers.set("Idempotency-Key", options.idempotencyKey);
 
 		if (body !== undefined) headers.set("Content-Type", "application/json");
-		// Financial writes are sent once. Unknown outcomes must be verified before initiating another operation.
 		let response: Response;
 
 		try {
@@ -307,11 +349,10 @@ export class OurPocket {
 	};
 	readonly wallets = {
 		create: (input: WalletInput, options: WriteOptions) =>
-			this.request("/sandbox/wallets", walletSchema, options, input, "POST"),
+			this.request("/wallets", walletSchema, options, input, "POST"),
 		get: (id: string, options?: RequestOptions) =>
-			this.request(`/sandbox/wallets/${encodeURIComponent(id)}`, walletSchema, options),
-		list: (options?: RequestOptions) =>
-			this.request("/sandbox/wallets", z.array(walletSchema), options),
+			this.request(`/wallets/${encodeURIComponent(id)}`, walletSchema, options),
+		list: (options?: RequestOptions) => this.request("/wallets", z.array(walletSchema), options),
 		fund: (id: string, input: AmountInput, options: WriteOptions) =>
 			this.request(
 				`/sandbox/wallets/${encodeURIComponent(id)}/fund`,
@@ -357,7 +398,7 @@ export class OurPocket {
 	readonly providers = {
 		list: (options?: RequestOptions) =>
 			this.request("/providers", z.array(providerSchema), options),
-		get: async (name: Provider, options?: RequestOptions) => {
+		get: async (name: FinancialProvider, options?: RequestOptions) => {
 			const providers = await this.request("/providers", z.array(providerSchema), options);
 			const provider = providers.find((item) => item.name === name);
 
@@ -365,6 +406,23 @@ export class OurPocket {
 
 			return provider;
 		},
+	};
+	readonly routing = {
+		get: (options?: RequestOptions) =>
+			this.request("/routing-policy", routingPolicySchema, options),
+		update: (
+			input: Pick<
+				RoutingPolicy,
+				"strategy" | "providerPriority" | "requireHealthy" | "safeFailover"
+			>,
+			options?: RequestOptions,
+		) => this.request("/routing-policy", routingPolicySchema, options, input, "POST"),
+	};
+	readonly reconciliation = {
+		list: (options?: RequestOptions) =>
+			this.request("/reconciliation", z.array(reconciliationRunSchema), options),
+		run: (options?: RequestOptions) =>
+			this.request("/reconciliation", reconciliationRunSchema, options, undefined, "POST"),
 	};
 }
 

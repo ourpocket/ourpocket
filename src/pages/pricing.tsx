@@ -9,30 +9,57 @@ import "../../tokens.css";
 
 const plans = [
 	{
-		name: "Sandbox",
+		name: "Developer",
 		price: "$0",
-		description: "Build and test the complete developer flow before connecting a provider account.",
+		description: "Build the complete financial flow with deterministic provider simulators.",
 		features: [
 			"Simulated payments and refunds",
 			"Fiat wallets, balances and transfers",
 			"Success, failure, pending and outage scenarios",
 			"Events, API logs and signed test webhooks",
 		],
-		cta: "Start free",
+		cta: "Start building",
 		featured: false,
 	},
 	{
-		name: "Builder",
-		price: "$6",
-		description: "Move a project to production with customer-owned provider credentials.",
+		name: "Launch",
+		price: "$3",
+		description: "Connect one production payment rail and ship your first live flow.",
 		features: [
-			"Everything in Sandbox",
-			"Paystack and Flutterwave hosted checkout",
-			"Payment verification and partial refunds",
-			"Signed webhook delivery, history and replay",
+			"Everything in Developer",
+			"One production provider",
+			"Hosted checkout and refunds",
+			"Signed webhooks and API logs",
 		],
-		cta: "Choose Builder",
+		cta: "Start launching",
+		featured: false,
+	},
+	{
+		name: "Growth",
+		price: "$6",
+		description: "Operate multiple payment and wallet providers from one control plane.",
+		features: [
+			"Everything in Launch",
+			"Payments with Paystack and Flutterwave",
+			"Wallets with Turnkey and Privy",
+			"Auditable routing and reconciliation",
+			"Delivery history and replay",
+		],
+		cta: "Choose Growth",
 		featured: true,
+	},
+	{
+		name: "Enterprise",
+		price: "$6",
+		description: "Bring higher-volume teams into the same policy and operations model.",
+		features: [
+			"Everything in Growth",
+			"Multiple production projects",
+			"Provider health policies",
+			"Extended operational support",
+		],
+		cta: "Contact us",
+		featured: false,
 	},
 ] as const;
 
@@ -53,12 +80,12 @@ function PricingPage() {
 						Start in Sandbox. Ship for $6.
 					</Typography>
 					<Typography className="mx-auto mt-5 max-w-2xl text-base leading-7 text-white/55">
-						Test the complete payment flow without provider credentials. Upgrade only when you are
-						ready to process production checkouts and refunds.
+						Build the complete financial flow without provider credentials. Upgrade when you are
+						ready to connect production payment and wallet infrastructure.
 					</Typography>
 				</div>
 
-				<div className="mx-auto mt-14 grid max-w-4xl gap-5 lg:grid-cols-2">
+				<div className="mx-auto mt-14 grid max-w-6xl gap-5 md:grid-cols-2 xl:grid-cols-4">
 					{plans.map((plan) => (
 						<article
 							key={plan.name}
@@ -110,8 +137,8 @@ function PricingPage() {
 				</div>
 
 				<Typography className="mx-auto mt-8 max-w-2xl text-center text-white/40">
-					Provider processing fees are charged separately by Paystack or Flutterwave. OurPocket does
-					not add a percentage fee during the MVP preview.
+					Provider processing fees are billed by each connected provider. OurPocket keeps the
+					control plane predictable at no more than $6 per month.
 				</Typography>
 			</section>
 			<DeveloperCta />

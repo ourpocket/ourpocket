@@ -6,6 +6,8 @@ enum ProjectApiKeyScope {
 enum ProviderType {
 	PAYSTACK = "paystack",
 	FLUTTERWAVE = "flutterwave",
+	TURNKEY = "turnkey",
+	PRIVY = "privy",
 	PAGA = "paga",
 	FINGRA = "fingra",
 }
@@ -21,6 +23,7 @@ enum ProviderCatalogStatus {
 enum ProviderCategory {
 	AFRICA = "africa",
 	GLOBAL = "global",
+	WALLET_INFRASTRUCTURE = "wallet_infrastructure",
 	DATA_VERIFICATION = "data_verification",
 }
 
@@ -31,6 +34,9 @@ enum ProviderCapability {
 	PAYMENT_COLLECTION = "payment_collection",
 	BANK_DATA = "bank_data",
 	IDENTITY_VERIFICATION = "identity_verification",
+	TRANSFERS = "transfers",
+	SIGNING = "signing",
+	POLICIES = "policies",
 }
 
 enum RoutingStrategy {
@@ -154,6 +160,7 @@ interface UsageMetrics {
 		apiRequests: number;
 		successfulTransactions: number;
 		failedTransactions: number;
+		unknownTransactions?: number;
 		activeWallets: number;
 		transactionVolume: number;
 		successRate: number;

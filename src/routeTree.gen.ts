@@ -19,7 +19,9 @@ import { Route as DashboardWalletsRouteImport } from './routes/dashboard/wallets
 import { Route as DashboardWalletProvidersRouteImport } from './routes/dashboard/wallet-providers'
 import { Route as DashboardTransactionsRouteImport } from './routes/dashboard/transactions'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
+import { Route as DashboardRoutingRouteImport } from './routes/dashboard/routing'
 import { Route as DashboardProjectsRouteImport } from './routes/dashboard/projects'
+import { Route as DashboardPaymentsRouteImport } from './routes/dashboard/payments'
 import { Route as DashboardApiLogsRouteImport } from './routes/dashboard/api-logs'
 import { Route as DashboardApiKeyRouteImport } from './routes/dashboard/api-key'
 import { Route as AuthVerifyEmailRouteImport } from './routes/auth/verify-email'
@@ -79,9 +81,19 @@ const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
   path: '/dashboard/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardRoutingRoute = DashboardRoutingRouteImport.update({
+  id: '/dashboard/routing',
+  path: '/dashboard/routing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardProjectsRoute = DashboardProjectsRouteImport.update({
   id: '/dashboard/projects',
   path: '/dashboard/projects',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardPaymentsRoute = DashboardPaymentsRouteImport.update({
+  id: '/dashboard/payments',
+  path: '/dashboard/payments',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardApiLogsRoute = DashboardApiLogsRouteImport.update({
@@ -130,7 +142,9 @@ export interface FileRoutesByFullPath {
   '/auth/verify-email': typeof AuthVerifyEmailRoute
   '/dashboard/api-key': typeof DashboardApiKeyRoute
   '/dashboard/api-logs': typeof DashboardApiLogsRoute
+  '/dashboard/payments': typeof DashboardPaymentsRoute
   '/dashboard/projects': typeof DashboardProjectsRoute
+  '/dashboard/routing': typeof DashboardRoutingRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/transactions': typeof DashboardTransactionsRoute
   '/dashboard/wallet-providers': typeof DashboardWalletProvidersRoute
@@ -150,7 +164,9 @@ export interface FileRoutesByTo {
   '/auth/verify-email': typeof AuthVerifyEmailRoute
   '/dashboard/api-key': typeof DashboardApiKeyRoute
   '/dashboard/api-logs': typeof DashboardApiLogsRoute
+  '/dashboard/payments': typeof DashboardPaymentsRoute
   '/dashboard/projects': typeof DashboardProjectsRoute
+  '/dashboard/routing': typeof DashboardRoutingRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/transactions': typeof DashboardTransactionsRoute
   '/dashboard/wallet-providers': typeof DashboardWalletProvidersRoute
@@ -171,7 +187,9 @@ export interface FileRoutesById {
   '/auth/verify-email': typeof AuthVerifyEmailRoute
   '/dashboard/api-key': typeof DashboardApiKeyRoute
   '/dashboard/api-logs': typeof DashboardApiLogsRoute
+  '/dashboard/payments': typeof DashboardPaymentsRoute
   '/dashboard/projects': typeof DashboardProjectsRoute
+  '/dashboard/routing': typeof DashboardRoutingRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/transactions': typeof DashboardTransactionsRoute
   '/dashboard/wallet-providers': typeof DashboardWalletProvidersRoute
@@ -193,7 +211,9 @@ export interface FileRouteTypes {
     | '/auth/verify-email'
     | '/dashboard/api-key'
     | '/dashboard/api-logs'
+    | '/dashboard/payments'
     | '/dashboard/projects'
+    | '/dashboard/routing'
     | '/dashboard/settings'
     | '/dashboard/transactions'
     | '/dashboard/wallet-providers'
@@ -213,7 +233,9 @@ export interface FileRouteTypes {
     | '/auth/verify-email'
     | '/dashboard/api-key'
     | '/dashboard/api-logs'
+    | '/dashboard/payments'
     | '/dashboard/projects'
+    | '/dashboard/routing'
     | '/dashboard/settings'
     | '/dashboard/transactions'
     | '/dashboard/wallet-providers'
@@ -233,7 +255,9 @@ export interface FileRouteTypes {
     | '/auth/verify-email'
     | '/dashboard/api-key'
     | '/dashboard/api-logs'
+    | '/dashboard/payments'
     | '/dashboard/projects'
+    | '/dashboard/routing'
     | '/dashboard/settings'
     | '/dashboard/transactions'
     | '/dashboard/wallet-providers'
@@ -254,7 +278,9 @@ export interface RootRouteChildren {
   AuthVerifyEmailRoute: typeof AuthVerifyEmailRoute
   DashboardApiKeyRoute: typeof DashboardApiKeyRoute
   DashboardApiLogsRoute: typeof DashboardApiLogsRoute
+  DashboardPaymentsRoute: typeof DashboardPaymentsRoute
   DashboardProjectsRoute: typeof DashboardProjectsRoute
+  DashboardRoutingRoute: typeof DashboardRoutingRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardTransactionsRoute: typeof DashboardTransactionsRoute
   DashboardWalletProvidersRoute: typeof DashboardWalletProvidersRoute
@@ -337,11 +363,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardSettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/routing': {
+      id: '/dashboard/routing'
+      path: '/dashboard/routing'
+      fullPath: '/dashboard/routing'
+      preLoaderRoute: typeof DashboardRoutingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard/projects': {
       id: '/dashboard/projects'
       path: '/dashboard/projects'
       fullPath: '/dashboard/projects'
       preLoaderRoute: typeof DashboardProjectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/payments': {
+      id: '/dashboard/payments'
+      path: '/dashboard/payments'
+      fullPath: '/dashboard/payments'
+      preLoaderRoute: typeof DashboardPaymentsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard/api-logs': {
@@ -406,7 +446,9 @@ const rootRouteChildren: RootRouteChildren = {
   AuthVerifyEmailRoute: AuthVerifyEmailRoute,
   DashboardApiKeyRoute: DashboardApiKeyRoute,
   DashboardApiLogsRoute: DashboardApiLogsRoute,
+  DashboardPaymentsRoute: DashboardPaymentsRoute,
   DashboardProjectsRoute: DashboardProjectsRoute,
+  DashboardRoutingRoute: DashboardRoutingRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardTransactionsRoute: DashboardTransactionsRoute,
   DashboardWalletProvidersRoute: DashboardWalletProvidersRoute,

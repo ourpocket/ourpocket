@@ -10,8 +10,8 @@ const steps = [
 	},
 	{
 		icon: Route,
-		title: "Connect production",
-		text: "Add encrypted Paystack or Flutterwave credentials for hosted checkout and refunds.",
+		title: "Connect real infrastructure",
+		text: "Add encrypted payment or wallet provider credentials when your project is ready.",
 		detail: "Customer-owned accounts",
 	},
 	{
@@ -30,11 +30,11 @@ export function WorkflowSection() {
 					<Typography as="h2" variant="display">
 						Build safely first.
 						<br />
-						Connect real payments when ready.
+						Connect live providers when ready.
 					</Typography>
 					<Typography className="workflow-reveal-text">
-						The same API shape moves from simulated operations to provider-backed checkout, with
-						explicit environments and no silent provider failover.
+						The same API shape moves from simulated operations to provider-backed payments and
+						wallets, with explicit environments and no silent provider failover.
 					</Typography>
 				</div>
 				<div className="workflow-steps">

@@ -17,7 +17,7 @@ export function LandingHeader() {
 				rel="noreferrer"
 			>
 				<span className="announcement-badge">OPEN</span>
-				<span>Sandbox payments today. Paystack and Flutterwave when you go live.</span>
+				<span>The financial control plane for payments, wallets, and provider operations.</span>
 				<strong>
 					View the repository <ArrowRight size={14} />
 				</strong>

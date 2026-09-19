@@ -9,11 +9,11 @@ export function LandingHero() {
 			<div className="landing-hero landing-shell">
 				<div className="hero-copy">
 					<Typography as="h1" variant="display" className="hero-title">
-						Test payments safely. Go live with one API.
+						Integrate once. Run every financial provider.
 					</Typography>
 					<Typography className="hero-description">
-						Simulate payments, refunds, wallets, balances, and transfers in Sandbox. Connect
-						Paystack or Flutterwave when your project is ready for production checkout.
+						Connect payments and wallets through one control plane. Route transactions, monitor
+						providers, and reconcile every operation without rebuilding your stack.
 					</Typography>
 					<div className="hero-actions">
 						<Link className="landing-button landing-button-primary" to="/auth/register">
@@ -29,7 +29,8 @@ export function LandingHero() {
 						</a>
 					</div>
 					<Typography className="hero-proof-line">
-						<strong>Open source</strong> payment infrastructure for developers building in Africa.
+						<strong>One API.</strong> Sandbox simulators, production providers, and every decision
+						in view.
 					</Typography>
 				</div>
 

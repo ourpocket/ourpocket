@@ -9,9 +9,9 @@ export function DeveloperCta() {
 			<section id="developers" className="developer-cta landing-shell landing-reveal">
 				<div className="cta-orbit cta-orbit-one" />
 				<div className="cta-orbit cta-orbit-two" />
-				<Typography>Move from a safe sandbox to verified production payments.</Typography>
+				<Typography>Move from a safe sandbox to controlled production infrastructure.</Typography>
 				<Typography as="h2" variant="display">
-					Build the payment flow
+					Build the financial stack
 					<br />
 					your product can operate.
 				</Typography>
@@ -32,7 +32,7 @@ export function DeveloperCta() {
 			<footer className="landing-footer landing-shell">
 				<div>
 					<LogoText size={142} className="landing-logo" />
-					<Typography>Sandbox operations and production checkout through one API.</Typography>
+					<Typography>Payments, wallets, routing, and reconciliation through one API.</Typography>
 				</div>
 				<nav aria-label="Footer navigation">
 					<a href="/#infrastructure">Infrastructure</a>
