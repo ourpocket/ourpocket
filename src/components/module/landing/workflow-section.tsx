@@ -1,5 +1,5 @@
 import { Typography } from "@/components/ui/typography";
-import { CheckCircle2, Code2, Route, Webhook } from "lucide-react";
+import { Activity, CheckCircle2, Code2, Route } from "lucide-react";
 
 const steps = [
 	{
@@ -11,14 +11,14 @@ const steps = [
 	{
 		icon: Route,
 		title: "Connect real infrastructure",
-		text: "Add encrypted payment or wallet provider credentials when your project is ready.",
+		text: "Connect and validate your own provider account when your project is ready.",
 		detail: "Customer-owned accounts",
 	},
 	{
-		icon: Webhook,
-		title: "Inspect every operation",
-		text: "Follow normalized states through events, API logs, deliveries, and replayable webhooks.",
-		detail: "Seven-day API logs",
+		icon: Activity,
+		title: "Inspect live provider activity",
+		text: "Request an on-demand overview from a connected provider without storing its activity as a snapshot.",
+		detail: "Provider data stays with you",
 	},
 ];
 

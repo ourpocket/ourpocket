@@ -28,7 +28,7 @@ export function LandingHero() {
 						)}
 						<a
 							className="landing-button landing-button-secondary"
-							href="https://github.com/ourpocket/ourpocket"
+							href="https://github.com/ourpocket/doc"
 							target="_blank"
 							rel="noreferrer"
 						>
