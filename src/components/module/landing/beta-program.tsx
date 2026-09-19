@@ -68,7 +68,7 @@ export function BetaProgram() {
 						</div>
 					) : (
 						<>
-							<MessageSquareText aria-hidden="true" size={21} strokeWidth={1.75} />
+							{/* <MessageSquareText aria-hidden="true" size={21} strokeWidth={1.75} /> */}
 							<Typography className="beta-program-copy">
 								Beta teams get a Sandbox workspace, guided provider onboarding, and a direct
 								feedback channel.
@@ -96,6 +96,7 @@ export function BetaProgram() {
 										onChange={(event) => setCompanyName(event.target.value)}
 										autoComplete="organization"
 										maxLength={160}
+										className="beta-program-company !w-full"
 									/>
 								</label>
 								<label>

@@ -1,97 +1,90 @@
+import json from "@shikijs/langs/json";
+import shellscript from "@shikijs/langs/shellscript";
+import typescript from "@shikijs/langs/typescript";
+import vitesseBlack from "@shikijs/themes/vitesse-black";
 import { Check, Copy } from "lucide-react";
-import { type ReactNode, useState } from "react";
+import { useEffect, useState } from "react";
+import { createHighlighterCore } from "shiki/core";
+import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
 
-const languages = ["TypeScript", "cURL", "JSON"] as const;
+const paymentInput = {
+	amount: "50000",
+	currency: "NGN",
+	scenario: "success",
+} as const;
 
-type Language = (typeof languages)[number];
+const examples = {
+	TypeScript: {
+		fileName: "create_payment.ts",
+		language: "typescript",
+		code: [
+			'import { OurPocket } from "@ourpocket/sdk";',
+			"",
+			"const apiKey = process.env.OURPOCKET_API_KEY;",
+			'if (!apiKey) throw new Error("Set OURPOCKET_API_KEY");',
+			"",
+			"const pocket = new OurPocket({ apiKey });",
+			"const payment = await pocket.payments.create(",
+			'  { amount: "50000", currency: "NGN", scenario: "success" },',
+			'  { idempotencyKey: "order_4821" },',
+			");",
+			"console.log(payment);",
+		].join("\n"),
+	},
+	cURL: {
+		fileName: "request.sh",
+		language: "shellscript",
+		code: [
+			'curl -X POST "https://nass-api.up.railway.app/v1/payments" \\',
+			'  -H "Authorization: Bearer $OURPOCKET_API_KEY" \\',
+			'  -H "Content-Type: application/json" \\',
+			'  -H "Idempotency-Key: order_4821" \\',
+			`  -d '${JSON.stringify(paymentInput)}'`,
+		].join("\n"),
+	},
+	JSON: {
+		fileName: "request.json",
+		language: "json",
+		code: JSON.stringify(paymentInput, null, 2),
+	},
+} as const;
 
-const snippets: Record<Language, ReactNode[]> = {
-	TypeScript: [
-		<span key="import">
-			<i>import</i> {"{ OurPocket }"} <i>from</i> <s>"@ourpocket/sdk"</s>;
-		</span>,
-		<span key="client">
-			<i>const</i> pocket = <i>new</i> <b>OurPocket</b>({"{ apiKey }"});
-		</span>,
-		<span key="payment">
-			<i>await</i> pocket.payments.<em>create</em>({"{"}
-		</span>,
-		<span key="amount">
-			{" "}
-			amount: <s>"50000"</s>, currency: <s>"NGN"</s>,
-		</span>,
-		<span key="currency">
-			{" "}
-			provider: <s>"paystack"</s>, reference: <s>"order_4821"</s>,
-		</span>,
-		<span key="contact">
-			{" "}
-			contact: {"{ email: "}
-			<s>"buyer@example.com"</s>
-			{" }"}
-		</span>,
-		<span key="close">{"}"});</span>,
-	],
-	cURL: [
-		<span key="curl">
-			<i>curl</i> -X POST /v1/payments \
-		</span>,
-		<span key="auth">
-			{" "}
-			-H <s>"Authorization: Bearer $OURPOCKET_KEY"</s> \
-		</span>,
-		<span key="body">
-			{" "}
-			-d{" "}
-			<s>
-				{
-					'\'{"amount":"50000","currency":"NGN","provider":"paystack","reference":"order_4821","contact":{"email":"buyer@example.com"}}\''
-				}
-			</s>
-		</span>,
-	],
-	JSON: [
-		<span key="open">{"{"}</span>,
-		<span key="kind">
-			{" "}
-			<s>"kind"</s>: <s>"payment"</s>,
-		</span>,
-		<span key="status">
-			{" "}
-			<s>"status"</s>: <s>"completed"</s>,
-		</span>,
-		<span key="environment">
-			{" "}
-			<s>"environment"</s>: <s>"sandbox"</s>,
-		</span>,
-		<span key="currency">
-			{" "}
-			<s>"currency"</s>: <s>"NGN"</s>
-		</span>,
-		<span key="close">{"}"}</span>,
-	],
-};
+type Language = keyof typeof examples;
+type HighlightedLine = Array<{ color?: string; content: string }>;
 
-const plainSnippets: Record<Language, string> = {
-	TypeScript:
-		'import { OurPocket } from "@ourpocket/sdk";\n\nconst pocket = new OurPocket({ apiKey });\nawait pocket.payments.create({ amount: "50000", currency: "NGN", provider: "paystack", reference: "order_4821", contact: { email: "buyer@example.com" } });',
-	cURL: 'curl -X POST /v1/payments \\\n  -H "Authorization: Bearer $OURPOCKET_KEY" \\\n  -d \'{"amount":"50000","currency":"NGN","provider":"paystack","reference":"order_4821","contact":{"email":"buyer@example.com"}}\'',
-	JSON: '{\n  "kind": "payment",\n  "status": "completed",\n  "environment": "sandbox",\n  "currency": "NGN"\n}',
-};
-
-const fileNames: Record<Language, string> = {
-	TypeScript: "create_payment.ts",
-	cURL: "request.sh",
-	JSON: "response.json",
-};
+const highlighter = createHighlighterCore({
+	themes: [vitesseBlack],
+	langs: [typescript, shellscript, json],
+	engine: createJavaScriptRegexEngine(),
+});
 
 export function CodePane() {
 	const [language, setLanguage] = useState<Language>("TypeScript");
+	const [lines, setLines] = useState<HighlightedLine[]>([]);
 	const [copied, setCopied] = useState(false);
+	const example = examples[language];
+
+	useEffect(() => {
+		let active = true;
+		setLines([]);
+		highlighter
+			.then((instance) =>
+				instance.codeToTokens(example.code, { lang: example.language, theme: "vitesse-black" }),
+			)
+			.then((result) => {
+				if (active) setLines(result.tokens);
+			})
+			.catch(() => {
+				if (active) setLines([]);
+			});
+		return () => {
+			active = false;
+		};
+	}, [example]);
 
 	const copyCode = async () => {
 		try {
-			await navigator.clipboard.writeText(plainSnippets[language]);
+			await navigator.clipboard.writeText(example.code);
 			setCopied(true);
 			window.setTimeout(() => setCopied(false), 2000);
 		} catch {
@@ -107,7 +100,7 @@ export function CodePane() {
 					<i />
 					<i />
 				</div>
-				<span>{fileNames[language]}</span>
+				<span>{example.fileName}</span>
 				<button
 					type="button"
 					onClick={() => void copyCode()}
@@ -116,17 +109,32 @@ export function CodePane() {
 					{copied ? <Check size={16} /> : <Copy size={16} />}
 				</button>
 			</div>
-			<pre className="code-pane-content" aria-label={`${language} payment example`}>
-				<code>{snippets[language]}</code>
+			<pre className="code-pane-content" aria-label={`${language} sandbox payment request`}>
+				<code>
+					{lines.length > 0
+						? lines.map((line, lineIndex) => (
+								<span key={`${language}:${lineIndex}`}>
+									{line.map((token, tokenIndex) => (
+										<span key={`${tokenIndex}:${token.content}`} style={{ color: token.color }}>
+											{token.content}
+										</span>
+									))}
+								</span>
+							))
+						: example.code}
+				</code>
 			</pre>
 			<div className="code-pane-tabs" role="tablist" aria-label="Code format">
-				{languages.map((item) => (
+				{(Object.keys(examples) as Language[]).map((item) => (
 					<button
 						type="button"
 						role="tab"
 						aria-selected={language === item}
 						className={language === item ? "is-active" : ""}
-						onClick={() => setLanguage(item)}
+						onClick={() => {
+							setLanguage(item);
+							setCopied(false);
+						}}
 						key={item}
 					>
 						{item}

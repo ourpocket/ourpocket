@@ -1,5 +1,5 @@
 import { Typography } from "@/components/ui/typography";
-import { Activity, ArrowUpRight, Braces, RefreshCw, ShieldCheck, WalletCards } from "lucide-react";
+import { Activity, Braces, RefreshCw, WalletCards } from "lucide-react";
 
 export function InfrastructureGrid() {
 	return (
@@ -22,27 +22,28 @@ export function InfrastructureGrid() {
 						<span>Unified API</span>
 					</div>
 					<Typography as="h3" variant="heading">
-						One contract across payments, refunds, wallets, and events.
+						One contract for sandbox payments, refunds, wallets, and transfers.
 					</Typography>
 					<div className="api-lines">
 						<p>
-							<span>POST</span> /payments
+							<span>POST</span> /v1/payments
 						</p>
 						<p>
-							<span>POST</span> /refunds
+							<span>POST</span> /v1/refunds
 						</p>
 						<p>
-							<span>GET</span> /events
+							<span>POST</span> /v1/sandbox/transfers
 						</p>
 					</div>
 				</article>
 				<article className="infra-card infra-card-routing landing-reveal">
 					<div className="card-heading">
 						<RefreshCw size={22} />
-						<span>Smart routing</span>
+						<span>Provider control</span>
 					</div>
 					<Typography as="h3" variant="heading">
-						Route by health, success rate, fees, latency, or your own priority.
+						Choose a connected provider for each live operation. Verify uncertain outcomes before
+						acting again.
 					</Typography>
 					<div className="routing-visual">
 						<span>Payment</span>
@@ -51,7 +52,7 @@ export function InfrastructureGrid() {
 							<i />
 							<i />
 						</div>
-						<span>Verified</span>
+						<span>Verify</span>
 					</div>
 				</article>
 				<article className="infra-card infra-card-control landing-reveal">
@@ -60,14 +61,14 @@ export function InfrastructureGrid() {
 						<span>Wallet infrastructure</span>
 					</div>
 					<Typography as="h3" variant="heading">
-						Simulate fiat balances, then create production wallets with Turnkey or Privy.
+						Create provider-owned dedicated or virtual accounts with Paystack and Flutterwave.
 					</Typography>
 					<div className="balance-panel">
-						<small>Available balance</small>
-						<strong>₦2,840,000.00</strong>
+						<small>Live provider overview</small>
+						<strong>Balances fetched on demand</strong>
 						<p>
-							<span>Money in</span>
-							<b>+ ₦184,320</b>
+							<span>Account ownership</span>
+							<b>Your provider</b>
 						</p>
 					</div>
 				</article>
@@ -77,26 +78,12 @@ export function InfrastructureGrid() {
 						<span>Observability</span>
 					</div>
 					<Typography as="h3" variant="heading">
-						Trace requests, routing decisions, unknown outcomes, and webhook deliveries.
+						Inspect API usage and live provider activity without storing provider responses.
 					</Typography>
-					<div className="activity-chart">
-						<i />
-						<i />
-						<i />
-						<i />
-						<i />
-						<i />
-						<i />
-						<i />
-						<i />
-					</div>
-					<div className="card-footer">
-						<span>
-							<ShieldCheck size={14} /> Healthy
-						</span>
-						<a href="#workflow">
-							See workflow <ArrowUpRight size={14} />
-						</a>
+					<div className="api-lines">
+						<p>Live provider overview</p>
+						<p>Payment verification</p>
+						<p>API request logs</p>
 					</div>
 				</article>
 			</div>

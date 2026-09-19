@@ -41,20 +41,9 @@ export function DeveloperCta() {
 					<LogoText size={142} className="landing-logo" />
 					<Typography>Payments, wallets, routing, and reconciliation through one API.</Typography>
 				</div>
-				<nav aria-label="Footer navigation">
-					<a href="/#infrastructure">Infrastructure</a>
-					<a href="/#workflow">How it works</a>
-				<a href="https://github.com/ourpocket/doc" target="_blank" rel="noreferrer">
-					Documentation
-				</a>
-					<Link to="/pricing">Pricing</Link>
-					<Link to="/auth/login">Sign in</Link>
-				</nav>
+
 				<div className="footer-bottom">
 					<span>© {new Date().getFullYear()} OurPocket</span>
-					<span className="system-status">
-						<i /> All systems operational
-					</span>
 				</div>
 			</footer>
 		</>
