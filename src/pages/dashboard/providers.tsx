@@ -1,17 +1,11 @@
 import DashboardLayout from "@/components/layouts/dashboard-layout";
+import { CustomModal, CustomModalCancel } from "@/components/modules/custom-modal";
+import { Fallback } from "@/components/modules/fallback";
+import { CardGridSkeleton, DashboardSkeleton } from "@/components/modules/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Typography } from "@/components/ui/typography";
 import { useCurrentProject } from "@/hooks/use-current-project";
 import { ApiError } from "@/services/api-client";
@@ -45,6 +39,7 @@ import type { FormEvent } from "react";
 const categoryLabels: Record<ProviderCategory, string> = {
 	[ProviderCategory.AFRICA]: "Africa",
 	[ProviderCategory.GLOBAL]: "Global",
+	[ProviderCategory.WALLET_INFRASTRUCTURE]: "Wallet infrastructure",
 	[ProviderCategory.DATA_VERIFICATION]: "Data & verification",
 };
 
@@ -55,6 +50,9 @@ const capabilityLabels: Record<ProviderCapability, string> = {
 	[ProviderCapability.PAYMENT_COLLECTION]: "Payments",
 	[ProviderCapability.BANK_DATA]: "Bank data",
 	[ProviderCapability.IDENTITY_VERIFICATION]: "Verification",
+	[ProviderCapability.TRANSFERS]: "Transfers",
+	[ProviderCapability.SIGNING]: "Signing",
+	[ProviderCapability.POLICIES]: "Policies",
 };
 
 const catalogStatusLabels: Record<ProviderCatalogStatus, string> = {
@@ -202,60 +200,53 @@ function ProviderConnectionDialog({
 	};
 
 	return (
-		<Dialog open={Boolean(target)} onOpenChange={(open) => !open && onClose()}>
-			<DialogContent className="border-white/10 bg-[#1b1b1b] text-white sm:max-w-md">
-				<DialogHeader>
-					<DialogTitle>
-						{isManaging ? "Manage" : "Connect"} {providerName}
-					</DialogTitle>
-					<DialogDescription className="leading-6 text-zinc-400">
-						These credentials are encrypted and used only by {projectName}.
-					</DialogDescription>
-				</DialogHeader>
+		<CustomModal
+			open={Boolean(target)}
+			onOpenChange={(open) => !open && onClose()}
+			title={`${isManaging ? "Manage" : "Connect"} ${providerName}`}
+			description={`These credentials are encrypted and used only by ${projectName}.`}
+			contentClassName="sm:max-w-md"
+		>
+			<form onSubmit={handleSubmit} className="space-y-5">
+				{credentialFields.map((field) => (
+					<div key={field.key} className="space-y-2">
+						<Label htmlFor={`provider-${field.key}`}>
+							{field.label}
+							{!field.required && <span className="text-zinc-500"> (optional)</span>}
+						</Label>
+						<Input
+							id={`provider-${field.key}`}
+							type={field.type === "secret" ? "password" : "text"}
+							value={values[field.key] ?? ""}
+							onChange={(event) =>
+								setValues((current) => ({ ...current, [field.key]: event.target.value }))
+							}
+							placeholder={field.placeholder}
+							disabled={isSubmitting}
+						/>
+					</div>
+				))}
 
-				<form onSubmit={handleSubmit} className="space-y-5">
-					{credentialFields.map((field) => (
-						<div key={field.key} className="space-y-2">
-							<Label htmlFor={`provider-${field.key}`}>
-								{field.label}
-								{!field.required && <span className="text-zinc-500"> (optional)</span>}
-							</Label>
-							<Input
-								id={`provider-${field.key}`}
-								type={field.type === "secret" ? "password" : "text"}
-								value={values[field.key] ?? ""}
-								onChange={(event) =>
-									setValues((current) => ({ ...current, [field.key]: event.target.value }))
-								}
-								placeholder={field.placeholder}
-								disabled={isSubmitting}
-							/>
-						</div>
-					))}
+				{errorMessage && (
+					<p role="alert" className="text-sm text-red-300">
+						{errorMessage}
+					</p>
+				)}
 
-					{errorMessage && (
-						<p role="alert" className="text-sm text-red-300">
-							{errorMessage}
-						</p>
-					)}
-
-					<DialogFooter>
-						<Button type="button" variant="ghost" onClick={onClose} disabled={isSubmitting}>
-							Cancel
-						</Button>
-						<Button type="submit" disabled={isSubmitting}>
-							{isSubmitting && <LoaderCircle className="animate-spin" aria-hidden="true" />}
-							{isSubmitting ? "Saving…" : isManaging ? "Save connection" : "Connect provider"}
-						</Button>
-					</DialogFooter>
-				</form>
-			</DialogContent>
-		</Dialog>
+				<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+					<CustomModalCancel disabled={isSubmitting} />
+					<Button type="submit" disabled={isSubmitting}>
+						{isSubmitting && <LoaderCircle className="animate-spin" aria-hidden="true" />}
+						{isSubmitting ? "Saving…" : isManaging ? "Save connection" : "Connect provider"}
+					</Button>
+				</div>
+			</form>
+		</CustomModal>
 	);
 }
 
 function WalletProvidersContent() {
-	const { project, isLoading: isProjectLoading } = useCurrentProject();
+	const { project, environment, isLoading: isProjectLoading } = useCurrentProject();
 	const [catalog, setCatalog] = useState<ProviderCatalog[]>([]);
 	const [projectProviders, setProjectProviders] = useState<ProjectProvider[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
@@ -293,6 +284,10 @@ function WalletProvidersContent() {
 	useEffect(() => {
 		void loadProviders();
 	}, [loadProviders]);
+
+	useEffect(() => {
+		if (environment === "sandbox") setActiveView("catalog");
+	}, [environment]);
 
 	const connectedProviderIds = useMemo(
 		() => new Set(projectProviders.map((provider) => provider.providerCatalogId).filter(Boolean)),
@@ -349,7 +344,7 @@ function WalletProvidersContent() {
 	};
 
 	if (isProjectLoading) {
-		return <Skeleton className="h-80 w-full" />;
+		return <DashboardSkeleton />;
 	}
 
 	if (!project) {
@@ -358,6 +353,16 @@ function WalletProvidersContent() {
 
 	return (
 		<div className="space-y-6">
+			<div className="rounded-xl border border-white/[0.08] bg-[#1b1b1b] p-5">
+				<Typography variant="subheading">
+					{environment === "sandbox" ? "Provider simulators" : "Production connections"}
+				</Typography>
+				<Typography className="mt-1 max-w-3xl">
+					{environment === "sandbox"
+						? "Every available adapter is ready with deterministic scenarios. No provider account or credentials are required."
+						: "Connect customer-owned credentials. Secrets stay encrypted and each provider exposes only the capabilities implemented by OurPocket."}
+				</Typography>
+			</div>
 			<div
 				className="flex flex-col gap-3 rounded-xl border border-white/[0.08] bg-[#1b1b1b] p-3 sm:flex-row sm:items-center sm:justify-between"
 				role="tablist"
@@ -376,23 +381,25 @@ function WalletProvidersContent() {
 						}
 						onClick={() => setActiveView("catalog")}
 					>
-						Catalog
+						{environment === "sandbox" ? "Simulators" : "Catalog"}
 					</Button>
-					<Button
-						type="button"
-						role="tab"
-						aria-selected={activeView === "connected"}
-						variant="ghost"
-						className={
-							activeView === "connected"
-								? "flex-1 !bg-white/[0.08] text-white sm:flex-none"
-								: "flex-1 !bg-transparent text-white/45 hover:!bg-white/[0.04] hover:text-white sm:flex-none"
-						}
-						onClick={() => setActiveView("connected")}
-					>
-						Connected
-						<span className="ml-1 text-xs text-white/40">{projectProviders.length}</span>
-					</Button>
+					{environment === "production" && (
+						<Button
+							type="button"
+							role="tab"
+							aria-selected={activeView === "connected"}
+							variant="ghost"
+							className={
+								activeView === "connected"
+									? "flex-1 !bg-white/[0.08] text-white sm:flex-none"
+									: "flex-1 !bg-transparent text-white/45 hover:!bg-white/[0.04] hover:text-white sm:flex-none"
+							}
+							onClick={() => setActiveView("connected")}
+						>
+							Connected
+							<span className="ml-1 text-xs text-white/40">{projectProviders.length}</span>
+						</Button>
+					)}
 				</div>
 				{activeView === "catalog" && (
 					<div className="relative w-full sm:max-w-xs">
@@ -421,25 +428,15 @@ function WalletProvidersContent() {
 					</div>
 				</div>
 			) : isLoading ? (
-				<div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-					{Array.from({ length: 6 }, (_, index) => (
-						<Skeleton key={index} className="h-64 w-full" />
-					))}
-				</div>
-			) : activeView === "connected" ? (
+				<CardGridSkeleton />
+			) : activeView === "connected" && environment === "production" ? (
 				projectProviders.length === 0 ? (
-					<div className="rounded-xl border border-dashed border-white/[0.12] bg-white/[0.015] px-6 py-14 text-center">
-						<Link2 className="mx-auto size-6 text-zinc-500" aria-hidden="true" />
-						<Typography variant="heading" className="mt-4">
-							No providers connected yet
-						</Typography>
-						<Typography className="mx-auto mt-2 max-w-md">
-							Browse the catalog to connect the provider account this project will use.
-						</Typography>
-						<Button type="button" className="mt-5" onClick={() => setActiveView("catalog")}>
-							Browse catalog
-						</Button>
-					</div>
+					<Fallback
+						title="No providers connected yet"
+						description="Browse the catalog to connect the provider account this project will use."
+						icon={<Link2 className="size-5" aria-hidden="true" />}
+						action={{ label: "Browse catalog", onClick: () => setActiveView("catalog") }}
+					/>
 				) : (
 					<div className="divide-y divide-white/[0.07] overflow-hidden rounded-xl border border-white/[0.08] bg-[#1b1b1b]">
 						{projectProviders.map((connection) => {
@@ -560,6 +557,7 @@ function WalletProvidersContent() {
 										{providers.map((provider) => {
 											const isConnected = connectedProviderIds.has(provider.id);
 											const canConnect = provider.status === ProviderCatalogStatus.ACTIVE;
+											const simulatorReady = environment === "sandbox" && canConnect;
 
 											return (
 												<article
@@ -576,7 +574,9 @@ function WalletProvidersContent() {
 															}}
 														/>
 														<Badge className={statusClass(provider.status)}>
-															{catalogStatusLabels[provider.status]}
+															{simulatorReady
+																? "Simulator ready"
+																: catalogStatusLabels[provider.status]}
 														</Badge>
 													</div>
 													<div className="mt-4">
@@ -597,7 +597,12 @@ function WalletProvidersContent() {
 														))}
 													</div>
 													<div className="mt-auto pt-5">
-														{isConnected ? (
+														{simulatorReady ? (
+															<Button type="button" variant="outline" disabled>
+																<CheckCircle2 aria-hidden="true" />
+																No credentials needed
+															</Button>
+														) : isConnected ? (
 															<Button
 																type="button"
 																variant="outline"
@@ -640,9 +645,10 @@ function WalletProvidersContent() {
 						})}
 
 						{filteredCatalog.length === 0 && (
-							<div className="rounded-xl border border-dashed border-white/[0.12] bg-white/[0.015] p-12 text-center">
-								<Typography>No providers match your search.</Typography>
-							</div>
+							<Fallback
+								title="No matching providers"
+								description="Try another search term or select a different category."
+							/>
 						)}
 					</div>
 				</>
@@ -662,7 +668,7 @@ function WalletProvidersPage() {
 	return (
 		<DashboardLayout
 			title="Providers"
-			description="Connect provider accounts to your active project"
+			description="Run built-in simulators in Sandbox and connect real provider accounts in Production."
 		>
 			<WalletProvidersContent />
 		</DashboardLayout>

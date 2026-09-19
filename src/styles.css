@@ -8,6 +8,15 @@ body {
   overflow-x: clip;
 }
 
+html[data-reduce-motion="true"] *,
+html[data-reduce-motion="true"] *::before,
+html[data-reduce-motion="true"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  scroll-behavior: auto !important;
+  transition-duration: 0.01ms !important;
+}
+
 body {
   @apply m-0;
   -webkit-font-smoothing: antialiased;

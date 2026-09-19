@@ -9,7 +9,7 @@ export default function WalletsPage() {
 	return (
 		<DashboardLayout
 			title="Wallets"
-			description="Create and test simulated fiat wallets and transfers."
+			description="Simulate fiat balances in Sandbox or create provider-backed chain wallets in Production."
 		>
 			<FinancialOperations key={`${projectId}:${environment}`} wallets />
 		</DashboardLayout>

@@ -8,6 +8,7 @@ import { routeTree } from "./routeTree.gen";
 import "./styles.css";
 import { Toaster } from "sonner";
 import { ErrorBoundary } from "./components/error-boundary";
+import { applyReducedMotionPreference } from "./lib/dashboard-preferences";
 import { setupGlobalErrorHandlers } from "./lib/error-handler";
 import reportWebVitals from "./reportWebVitals.ts";
 
@@ -44,6 +45,7 @@ function App() {
 const rootElement = document.getElementById("app");
 
 if (rootElement && !rootElement.innerHTML) {
+	applyReducedMotionPreference();
 	const root = ReactDOM.createRoot(rootElement);
 	root.render(<App />);
 }

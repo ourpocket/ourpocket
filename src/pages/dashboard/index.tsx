@@ -1,5 +1,6 @@
 "use client";
 
+import { DashboardSkeleton } from "@/components/modules/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useCurrentProject } from "@/hooks/use-current-project";
 import { useUsageMetrics } from "@/hooks/use-usage-metrics";
@@ -136,6 +137,10 @@ export default function DashboardOverview() {
 		},
 	];
 
+	if (isLoading) {
+		return <DashboardSkeleton />;
+	}
+
 	return (
 		<div className="space-y-6">
 			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -143,8 +148,6 @@ export default function DashboardOverview() {
 					<StatCard key={stat.title} {...stat} />
 				))}
 			</div>
-
-			{isLoading && <p className="text-sm text-white/40">Loading dashboard…</p>}
 
 			<div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
 				<ChartCard title="Transaction Volume" subtitle="Monthly transaction volume and count">

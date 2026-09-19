@@ -18,7 +18,7 @@ export const deliverySchema = z.object({
 	eventId: z.uuid(),
 	requestId: z.uuid(),
 	webhookId: z.uuid(),
-	status: z.enum(["pending", "completed", "failed"]),
+	status: z.enum(["pending", "processing", "completed", "failed"]),
 	attempts: z.number(),
 	history: z.array(
 		z.object({
@@ -32,6 +32,46 @@ export const deliverySchema = z.object({
 });
 
 export type FinancialDelivery = z.infer<typeof deliverySchema>;
+
+const routingPolicySchema = z.object({
+	id: z.uuid().nullable(),
+	projectId: z.uuid(),
+	environment: z.enum(["sandbox", "production"]),
+	strategy: z.enum(["best_success_rate", "lowest_fees", "fastest_response", "custom_priority"]),
+	providerPriority: z.array(z.enum(["paystack", "flutterwave"])),
+	requireHealthy: z.boolean(),
+	safeFailover: z.boolean(),
+});
+
+const providerHealthSchema = z.object({
+	provider: z.enum(["paystack", "flutterwave"]),
+	connected: z.boolean(),
+	status: z.enum(["unknown", "healthy", "degraded", "down"]),
+	successRate: z.string().nullable(),
+	settledCount: z.number(),
+	p95LatencyMs: z.number().nullable(),
+	latencyCount: z.number(),
+	estimatedFeeBps: z.number().nullable(),
+	updatedAt: z.string().nullable(),
+});
+
+const reconciliationRunSchema = z.object({
+	id: z.uuid(),
+	projectId: z.uuid(),
+	environment: z.enum(["sandbox", "production"]),
+	status: z.enum(["running", "completed", "failed"]),
+	inspected: z.number(),
+	resolved: z.number(),
+	unresolved: z.number(),
+	resourceIds: z.array(z.uuid()),
+	requestId: z.uuid(),
+	createdAt: z.string(),
+	updatedAt: z.string(),
+});
+
+export type RoutingPolicy = z.infer<typeof routingPolicySchema>;
+export type ProviderHealth = z.infer<typeof providerHealthSchema>;
+export type ReconciliationRun = z.infer<typeof reconciliationRunSchema>;
 
 export async function listFinancialResources(
 	projectId: string,
@@ -66,4 +106,54 @@ export function sendTestEvent(projectId: string) {
 		method: "POST",
 		body: "{}",
 	});
+}
+
+export async function getRoutingPolicy(projectId: string) {
+	return routingPolicySchema.parse(
+		await apiRequest<unknown>(`/projects/${projectId}/financial/routing-policy`),
+	);
+}
+
+export async function saveRoutingPolicy(
+	projectId: string,
+	policy: Pick<RoutingPolicy, "strategy" | "providerPriority" | "requireHealthy" | "safeFailover">,
+) {
+	return routingPolicySchema.parse(
+		await apiRequest<unknown>(`/projects/${projectId}/financial/routing-policy`, {
+			method: "POST",
+			body: JSON.stringify(policy),
+		}),
+	);
+}
+
+export async function listProviderHealth(projectId: string) {
+	return z
+		.array(providerHealthSchema)
+		.parse(await apiRequest<unknown>(`/projects/${projectId}/financial/provider-health`));
+}
+
+export async function saveProviderHealth(
+	projectId: string,
+	provider: ProviderHealth["provider"],
+	input: Pick<ProviderHealth, "status" | "estimatedFeeBps">,
+) {
+	return apiRequest<unknown>(`/projects/${projectId}/financial/provider-health/${provider}`, {
+		method: "POST",
+		body: JSON.stringify(input),
+	});
+}
+
+export async function listReconciliationRuns(projectId: string) {
+	return z
+		.array(reconciliationRunSchema)
+		.parse(await apiRequest<unknown>(`/projects/${projectId}/financial/reconciliation`));
+}
+
+export async function runReconciliation(projectId: string) {
+	return reconciliationRunSchema.parse(
+		await apiRequest<unknown>(`/projects/${projectId}/financial/reconciliation`, {
+			method: "POST",
+			body: "{}",
+		}),
+	);
 }

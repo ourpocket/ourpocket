@@ -79,4 +79,35 @@ describe("SDK transport", () => {
 		});
 		await expect(client.payments.get(ids[0])).rejects.toBeInstanceOf(OurPocketError);
 	});
+	it("models a production chain wallet without a fiat balance", async () => {
+		const wallet = {
+			...resource,
+			environment: "production",
+			kind: "wallet",
+			status: "completed",
+			amount: null,
+			currency: null,
+			provider: "turnkey",
+			details: {
+				balance: null,
+				address: "0x1234567890abcdef1234567890abcdef12345678",
+				chain: "ethereum",
+				custody: "provider",
+			},
+		};
+		const transport = vi
+			.fn<typeof fetch>()
+			.mockResolvedValue(new Response(JSON.stringify({ data: wallet }), { status: 201 }));
+		const client = new OurPocket({ apiKey: "op_live_sk_fixture", fetch: transport });
+		const created = await client.wallets.create(
+			{ provider: "turnkey", chain: "ethereum" },
+			{ idempotencyKey: "chain-wallet" },
+		);
+		expect(created.currency).toBeNull();
+		expect(created.details.balance).toBeNull();
+		expect(JSON.parse(String(transport.mock.calls[0][1]?.body))).toEqual({
+			provider: "turnkey",
+			chain: "ethereum",
+		});
+	});
 });

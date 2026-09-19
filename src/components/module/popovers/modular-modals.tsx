@@ -1,33 +1,18 @@
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import type { FC, ReactNode } from "react";
+import { CustomModal } from "@/components/modules/custom-modal";
+import type { ReactNode } from "react";
 
-interface IProps {
+interface ModularModalProps {
+	description?: ReactNode;
+	title: ReactNode;
 	trigger?: ReactNode;
 	children?: ReactNode;
 }
 
-const ModularModals: FC<IProps> = ({ trigger, children }) => {
+const ModularModals = ({ children, description, title, trigger }: ModularModalProps) => {
 	return (
-		<>
-			<Dialog>
-				<DialogTrigger>{trigger}</DialogTrigger>
-				<DialogContent className={"bg-card"}>
-					<DialogHeader>
-						<DialogTitle></DialogTitle>
-						<DialogDescription></DialogDescription>
-					</DialogHeader>
-
-					<div className={"mb-3"}>{children}</div>
-				</DialogContent>
-			</Dialog>
-		</>
+		<CustomModal trigger={trigger} title={title} description={description}>
+			{children}
+		</CustomModal>
 	);
 };
 

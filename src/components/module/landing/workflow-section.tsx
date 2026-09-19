@@ -1,23 +1,24 @@
+import { Typography } from "@/components/ui/typography";
 import { CheckCircle2, Code2, Route, Webhook } from "lucide-react";
 
 const steps = [
 	{
 		icon: Code2,
-		title: "Integrate once",
-		text: "Use a single SDK and a consistent wallet contract across your stack.",
-		detail: "One API key",
+		title: "Start in Sandbox",
+		text: "Create a project and test realistic financial scenarios without provider credentials.",
+		detail: "No real money",
 	},
 	{
 		icon: Route,
-		title: "Choose your provider",
-		text: "Route each wallet to the provider that fits your market and use case.",
-		detail: "No code rewrite",
+		title: "Connect real infrastructure",
+		text: "Add encrypted payment or wallet provider credentials when your project is ready.",
+		detail: "Customer-owned accounts",
 	},
 	{
 		icon: Webhook,
-		title: "Operate with confidence",
-		text: "Normalized webhooks and transaction states keep your ledger in sync.",
-		detail: "Predictable events",
+		title: "Inspect every operation",
+		text: "Follow normalized states through events, API logs, deliveries, and replayable webhooks.",
+		detail: "Seven-day API logs",
 	},
 ];
 
@@ -26,16 +27,15 @@ export function WorkflowSection() {
 		<section id="workflow" className="workflow-section">
 			<div className="landing-shell workflow-layout">
 				<div className="workflow-intro">
-					<h2>
-						We handle the pipes.
+					<Typography as="h2" variant="display">
+						Build safely first.
 						<br />
-						You ship the product.
-					</h2>
-					<p className="workflow-reveal-text">
-						Provider quirks, inconsistent payloads, and brittle reconciliation should not dictate
-						your roadmap. OurPocket turns the complexity underneath into a clean interface your team
-						can trust.
-					</p>
+						Connect live providers when ready.
+					</Typography>
+					<Typography className="workflow-reveal-text">
+						The same API shape moves from simulated operations to provider-backed payments and
+						wallets, with explicit environments and no silent provider failover.
+					</Typography>
 				</div>
 				<div className="workflow-steps">
 					{steps.map((step, index) => {
@@ -47,8 +47,10 @@ export function WorkflowSection() {
 								<div className="workflow-icon">
 									<Icon size={23} />
 								</div>
-								<h3>{step.title}</h3>
-								<p>{step.text}</p>
+								<Typography as="h3" variant="heading">
+									{step.title}
+								</Typography>
+								<Typography>{step.text}</Typography>
 								<span>
 									<CheckCircle2 size={15} /> {step.detail}
 								</span>
