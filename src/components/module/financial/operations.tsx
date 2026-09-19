@@ -22,26 +22,25 @@ import {
 import { Typography } from "@/components/ui/typography";
 import { useCurrentProject } from "@/hooks/use-current-project";
 import { API_BASE_URL } from "@/services/api-client";
-import { listFinancialResources } from "@/services/financial.service";
 import {
-	type AmountInput,
 	type FinancialResource,
-	OurPocket,
-	type PaymentInput,
-	type RefundInput,
-	type Scenario,
-} from "@ourpocket/sdk";
+	getFinancialContext,
+	listFinancialResources,
+	postFinancialResource,
+} from "@/services/financial.service";
 import { Braces } from "lucide-react";
 import { type FormEvent, useEffect, useState } from "react";
 
-const scenarioOptions: Scenario[] = [
+const scenarioOptions = [
 	"success",
 	"failure",
 	"pending",
 	"insufficient_funds",
 	"timeout",
 	"provider_outage",
-];
+] as const;
+
+type Scenario = (typeof scenarioOptions)[number];
 
 const operations = ["payment", "refund", "create_wallet", "fund", "debit", "transfer"] as const;
 
@@ -141,13 +140,12 @@ export default function FinancialOperations({
 		const expected = environment === "sandbox" ? "op_test_sk_" : "op_live_sk_";
 
 		if (!apiKey.startsWith(expected)) throw new Error(`Use a ${environment} project API key`);
-		const pocket = new OurPocket({ apiKey, baseUrl: API_BASE_URL });
-		const context = await pocket.context.get();
+		const context = await getFinancialContext(apiKey);
 
 		if (context.projectId !== project?.id || context.environment !== environment)
 			throw new Error("Use the selected project’s API key");
 
-		return pocket;
+		return apiKey;
 	};
 
 	async function execute(action: () => Promise<FinancialResource>) {
@@ -175,50 +173,67 @@ export default function FinancialOperations({
 		await execute(async () => {
 			if (idempotencyKey.length > 190)
 				throw new Error("Use an idempotency key of at most 190 characters");
-			const pocket = await client();
-			const options = { idempotencyKey };
-			const input: AmountInput = { amount, currency };
-
-			if (environment === "sandbox") input.scenario = scenario;
+			const key = await client();
+			const input = { amount, currency, ...(environment === "sandbox" ? { scenario } : {}) };
 
 			if (operation === "payment") {
-				const customer = await pocket.customers.create(
+				const customer = await postFinancialResource(
+					"/customers",
 					{ email },
-					{ idempotencyKey: `${idempotencyKey}-customer` },
+					key,
+					`${idempotencyKey}-customer`,
 				);
 
-				const payment: PaymentInput = { ...input, customer: customer.id, provider };
-
-				if (callbackUrl) payment.callbackUrl = callbackUrl;
-
-				return pocket.payments.create(payment, options);
+				return postFinancialResource(
+					"/payments",
+					{ ...input, customer: customer.id, provider, ...(callbackUrl ? { callbackUrl } : {}) },
+					key,
+					idempotencyKey,
+				);
 			}
 
 			if (operation === "refund") {
-				const refund: RefundInput = { payment: resourceId, amount };
-
-				if (environment === "sandbox") refund.scenario = scenario;
-
-				return pocket.refunds.create(refund, options);
+				return postFinancialResource(
+					"/refunds",
+					{ payment: resourceId, amount, ...(environment === "sandbox" ? { scenario } : {}) },
+					key,
+					idempotencyKey,
+				);
 			}
 
 			if (operation === "create_wallet")
-				return pocket.wallets.create(
+				return postFinancialResource(
+					"/wallets",
 					{
 						currency: environment === "sandbox" ? currency : undefined,
 						provider: environment === "production" ? walletProvider : undefined,
 						chain: environment === "production" ? chain : undefined,
 					},
-					options,
+					key,
+					idempotencyKey,
 				);
 
-			if (operation === "fund") return pocket.wallets.fund(resourceId, input, options);
+			if (operation === "fund")
+				return postFinancialResource(
+					`/sandbox/wallets/${encodeURIComponent(resourceId)}/fund`,
+					input,
+					key,
+					idempotencyKey,
+				);
 
-			if (operation === "debit") return pocket.wallets.debit(resourceId, input, options);
+			if (operation === "debit")
+				return postFinancialResource(
+					`/sandbox/wallets/${encodeURIComponent(resourceId)}/debit`,
+					input,
+					key,
+					idempotencyKey,
+				);
 
-			return pocket.transfers.create(
+			return postFinancialResource(
+				"/sandbox/transfers",
 				{ ...input, fromWallet: resourceId, toWallet: destination },
-				options,
+				key,
+				idempotencyKey,
 			);
 		});
 	}
@@ -585,7 +600,11 @@ export default function FinancialOperations({
 																disabled={busy}
 																onClick={() =>
 																	void execute(async () =>
-																		(await client()).sandbox.complete(item.id, "completed"),
+																		postFinancialResource(
+																			`/sandbox/operations/${encodeURIComponent(item.id)}/complete`,
+																			{ status: "completed" },
+																			await client(),
+																		),
 																	)
 																}
 															>
@@ -597,7 +616,11 @@ export default function FinancialOperations({
 																disabled={busy}
 																onClick={() =>
 																	void execute(async () =>
-																		(await client()).sandbox.complete(item.id, "failed"),
+																		postFinancialResource(
+																			`/sandbox/operations/${encodeURIComponent(item.id)}/complete`,
+																			{ status: "failed" },
+																			await client(),
+																		),
 																	)
 																}
 															>
@@ -610,9 +633,11 @@ export default function FinancialOperations({
 															disabled={busy}
 															onClick={() =>
 																void execute(async () =>
-																	item.kind === "refund"
-																		? (await client()).refunds.verify(item.id)
-																		: (await client()).payments.verify(item.id),
+																	postFinancialResource(
+																		`/${item.kind === "refund" ? "refunds" : "payments"}/${encodeURIComponent(item.id)}/verify`,
+																		undefined,
+																		await client(),
+																	),
 																)
 															}
 														>

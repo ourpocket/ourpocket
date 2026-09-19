@@ -26,6 +26,13 @@ class ApiError extends Error {
 	}
 }
 
+class ApiTransportError extends Error {
+	constructor(cause: unknown) {
+		super("Connection failed", { cause });
+		this.name = "ApiTransportError";
+	}
+}
+
 async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
 	const { auth = true, apiKey, versioned = true, ...requestOptions } = options;
 	const headers = new Headers(requestOptions.headers);
@@ -42,10 +49,16 @@ async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Pro
 		headers.set("Authorization", `Bearer ${bearer}`);
 	}
 
-	const response = await fetch(`${versioned ? API_BASE_URL : API_PUBLIC_URL}${path}`, {
-		...requestOptions,
-		headers,
-	});
+	let response: Response;
+
+	try {
+		response = await fetch(`${versioned ? API_BASE_URL : API_PUBLIC_URL}${path}`, {
+			...requestOptions,
+			headers,
+		});
+	} catch (error) {
+		throw new ApiTransportError(error);
+	}
 	const payload = await response.json().catch(() => null);
 
 	if (!response.ok) {
@@ -59,4 +72,4 @@ async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Pro
 	return payload as T;
 }
 
-export { API_BASE_URL, API_PUBLIC_URL, ApiError, apiRequest };
+export { API_BASE_URL, API_PUBLIC_URL, ApiError, ApiTransportError, apiRequest };
