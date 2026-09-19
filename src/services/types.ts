@@ -6,6 +6,7 @@ enum ProjectApiKeyScope {
 enum ProviderType {
 	PAYSTACK = "paystack",
 	FLUTTERWAVE = "flutterwave",
+	MONO = "mono",
 	TURNKEY = "turnkey",
 	PRIVY = "privy",
 	PAGA = "paga",
@@ -36,6 +37,11 @@ enum ProviderCapability {
 	IDENTITY_VERIFICATION = "identity_verification",
 	TRANSFERS = "transfers",
 	SIGNING = "signing",
+	ACCOUNT_RESOLUTION = "account_resolution",
+	PAYOUT_RECIPIENTS = "payout_recipients",
+	PAYOUTS = "payouts",
+	VIRTUAL_ACCOUNTS = "virtual_accounts",
+	PROVIDER_ACTIVITY = "provider_activity",
 	POLICIES = "policies",
 }
 
@@ -121,6 +127,8 @@ interface ProjectProvider {
 	provider?: ProviderCatalog | null;
 	config: Record<string, unknown>;
 	isActive: boolean;
+	isVerified?: boolean;
+	verifiedAt?: string | null;
 	createdAt: string;
 }
 

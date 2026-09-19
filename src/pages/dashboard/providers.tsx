@@ -52,6 +52,11 @@ const capabilityLabels: Record<ProviderCapability, string> = {
 	[ProviderCapability.IDENTITY_VERIFICATION]: "Verification",
 	[ProviderCapability.TRANSFERS]: "Transfers",
 	[ProviderCapability.SIGNING]: "Signing",
+	[ProviderCapability.ACCOUNT_RESOLUTION]: "Account resolution",
+	[ProviderCapability.PAYOUT_RECIPIENTS]: "Payout recipients",
+	[ProviderCapability.PAYOUTS]: "Payouts",
+	[ProviderCapability.VIRTUAL_ACCOUNTS]: "Virtual accounts",
+	[ProviderCapability.PROVIDER_ACTIVITY]: "Live activity",
 	[ProviderCapability.POLICIES]: "Policies",
 };
 

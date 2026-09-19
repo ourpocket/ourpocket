@@ -24,9 +24,11 @@ import { useCurrentProject } from "@/hooks/use-current-project";
 import { API_BASE_URL } from "@/services/api-client";
 import {
 	type FinancialResource,
+	type TransientCheckout,
 	getFinancialContext,
 	listFinancialResources,
 	postFinancialResource,
+	postTransientCheckout,
 } from "@/services/financial.service";
 import { Braces } from "lucide-react";
 import { type FormEvent, useEffect, useState } from "react";
@@ -93,7 +95,7 @@ export default function FinancialOperations({
 	const [amount, setAmount] = useState("50000");
 	const [currency, setCurrency] = useState("NGN");
 	const [email, setEmail] = useState("");
-	const [provider, setProvider] = useState<"paystack" | "flutterwave">("paystack");
+	const [provider, setProvider] = useState<"paystack" | "flutterwave" | "mono">("paystack");
 	const [walletProvider, setWalletProvider] = useState<"turnkey" | "privy">("turnkey");
 	const [chain, setChain] = useState<"ethereum" | "solana">("ethereum");
 	const [callbackUrl, setCallbackUrl] = useState("");
@@ -101,7 +103,7 @@ export default function FinancialOperations({
 	const [destination, setDestination] = useState("");
 	const [scenario, setScenario] = useState<Scenario>("success");
 	const [view, setView] = useState("all");
-	const [result, setResult] = useState<FinancialResource | null>(null);
+	const [result, setResult] = useState<FinancialResource | TransientCheckout | null>(null);
 	useEffect(() => {
 		setApiKey("");
 		setResult(null);
@@ -110,6 +112,7 @@ export default function FinancialOperations({
 		setIdempotencyKey(crypto.randomUUID());
 		setItems([]);
 		setError(null);
+		if (!wallets && environment === "production") setOperation("payment");
 	}, [environment, project?.id]);
 	useEffect(() => {
 		let cancelled = false;
@@ -148,19 +151,21 @@ export default function FinancialOperations({
 		return apiKey;
 	};
 
-	async function execute(action: () => Promise<FinancialResource>) {
+	async function execute(action: () => Promise<FinancialResource | TransientCheckout>) {
 		setBusy(true);
 		setError(null);
 
 		try {
 			const response = await action();
 
-			if (response.projectId !== project?.id || response.environment !== environment)
-				throw new Error("API key belongs to a different project or environment");
 			setResult(response);
 
-			if (project)
-				setItems(await listFinancialResources(project.id, wallets ? "wallets" : "transactions"));
+			if ("projectId" in response) {
+				if (response.projectId !== project?.id || response.environment !== environment)
+					throw new Error("API key belongs to a different project or environment");
+				if (project)
+					setItems(await listFinancialResources(project.id, wallets ? "wallets" : "transactions"));
+			}
 		} catch (reason) {
 			setError(reason instanceof Error ? reason.message : "Request failed");
 		} finally {
@@ -174,28 +179,36 @@ export default function FinancialOperations({
 			if (idempotencyKey.length > 190)
 				throw new Error("Use an idempotency key of at most 190 characters");
 			const key = await client();
-			const input = { amount, currency, ...(environment === "sandbox" ? { scenario } : {}) };
+			const input = {
+				amount,
+				currency,
+				...(environment === "sandbox" ? { scenario } : {}),
+			};
 
 			if (operation === "payment") {
-				const customer = await postFinancialResource(
-					"/customers",
-					{ email },
-					key,
-					`${idempotencyKey}-customer`,
-				);
-
-				return postFinancialResource(
-					"/payments",
-					{ ...input, customer: customer.id, provider, ...(callbackUrl ? { callbackUrl } : {}) },
-					key,
-					idempotencyKey,
-				);
+				if (environment === "production")
+					return postTransientCheckout(
+						{
+							amount,
+							currency,
+							provider,
+							reference: idempotencyKey,
+							contact: { email },
+							...(callbackUrl ? { callbackUrl } : {}),
+						},
+						key,
+					);
+				return postFinancialResource("/payments", { ...input, provider }, key, idempotencyKey);
 			}
 
 			if (operation === "refund") {
 				return postFinancialResource(
 					"/refunds",
-					{ payment: resourceId, amount, ...(environment === "sandbox" ? { scenario } : {}) },
+					{
+						payment: resourceId,
+						amount,
+						...(environment === "sandbox" ? { scenario } : {}),
+					},
 					key,
 					idempotencyKey,
 				);
@@ -262,7 +275,12 @@ export default function FinancialOperations({
 	const requestBody = (() => {
 		if (operation === "payment")
 			return {
-				customer: "{customer_id}",
+				...(environment === "production"
+					? {
+							reference: "{your_reference}",
+							contact: { email: "buyer@example.com" },
+						}
+					: {}),
 				amount,
 				currency,
 				provider,
@@ -296,10 +314,14 @@ export default function FinancialOperations({
 	})();
 
 	const requestPreview = `curl --request POST '${API_BASE_URL}${endpoint}' \\
-  --header 'Authorization: Bearer $OURPOCKET_${environment === "sandbox" ? "SANDBOX" : "LIVE"}_KEY' \\
-  --header 'Idempotency-Key: ${idempotencyKey}' \\
-  --header 'Content-Type: application/json' \\
-  --data '${JSON.stringify(requestBody, null, 2)}'`;
+	--header 'Authorization: Bearer $OURPOCKET_${environment === "sandbox" ? "SANDBOX" : "LIVE"}_KEY' \\
+	${
+		environment === "sandbox"
+			? `--header 'Idempotency-Key: ${idempotencyKey}' \\
+	`
+			: ""
+	}--header 'Content-Type: application/json' \\
+	--data '${JSON.stringify(requestBody, null, 2)}'`;
 
 	const resultPreview = result
 		? JSON.stringify(result, null, 2)
@@ -349,7 +371,9 @@ export default function FinancialOperations({
 									<SelectContent>
 										{(wallets
 											? ["create_wallet", "fund", "debit", "transfer"]
-											: ["payment", "refund"]
+											: environment === "production"
+												? ["payment"]
+												: ["payment", "refund"]
 										).map((value) => (
 											<SelectItem key={value} value={value}>
 												{value.replaceAll("_", " ")}
@@ -417,7 +441,8 @@ export default function FinancialOperations({
 										<Select
 											value={provider}
 											onValueChange={(value) => {
-												if (value === "paystack" || value === "flutterwave") setProvider(value);
+												if (value === "paystack" || value === "flutterwave" || value === "mono")
+													setProvider(value);
 											}}
 										>
 											<SelectTrigger aria-label="Provider">
@@ -426,6 +451,7 @@ export default function FinancialOperations({
 											<SelectContent>
 												<SelectItem value="paystack">Paystack</SelectItem>
 												<SelectItem value="flutterwave">Flutterwave</SelectItem>
+												<SelectItem value="mono">Mono</SelectItem>
 											</SelectContent>
 										</Select>
 									</Label>
@@ -436,7 +462,10 @@ export default function FinancialOperations({
 											value={callbackUrl}
 											onChange={(event) => setCallbackUrl(event.target.value)}
 											placeholder="https://yourapp.com/checkout"
-											required={environment === "production" && provider === "flutterwave"}
+											required={
+												environment === "production" &&
+												(provider === "flutterwave" || provider === "mono")
+											}
 										/>
 									</Label>
 								</>
@@ -480,7 +509,11 @@ export default function FinancialOperations({
 								</Label>
 							)}
 							<Fields
-								label="Idempotency key"
+								label={
+									environment === "production" && operation === "payment"
+										? "Provider reference"
+										: "Idempotency key"
+								}
 								value={idempotencyKey}
 								onChange={setIdempotencyKey}
 								className="sm:col-span-2"
@@ -518,10 +551,10 @@ export default function FinancialOperations({
 								maxHeight="20rem"
 							/>
 						</div>
-						{result?.kind === "payment" && result.details.checkoutUrl && (
+						{result && "checkoutUrl" in result && (
 							<a
 								className="mt-4 inline-block text-sm text-orange-400 underline"
-								href={result.details.checkoutUrl}
+								href={result.checkoutUrl}
 								target="_blank"
 								rel="noopener noreferrer"
 							>

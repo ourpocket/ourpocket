@@ -8,7 +8,7 @@ const resourceSchema = z.object({
 	status: z.enum(["pending", "unknown", "completed", "failed"]),
 	amount: z.string().nullable(),
 	currency: z.string().nullable(),
-	provider: z.enum(["paystack", "flutterwave", "turnkey", "privy"]).nullable(),
+	provider: z.enum(["paystack", "flutterwave", "mono", "turnkey", "privy"]).nullable(),
 	providerReference: z.string().nullable(),
 	parentId: z.string().nullable(),
 	requestId: z.uuid(),
@@ -81,6 +81,28 @@ export async function postFinancialResource(
 	return financialResourceSchema.parse(response);
 }
 
+const transientCheckoutSchema = z.object({
+	provider: z.enum(["paystack", "flutterwave", "mono"]),
+	reference: z.string(),
+	checkoutUrl: z.url(),
+});
+
+export type TransientCheckout = z.infer<typeof transientCheckoutSchema>;
+
+export async function postTransientCheckout(
+	body: Record<string, unknown>,
+	apiKey: string,
+): Promise<TransientCheckout> {
+	return transientCheckoutSchema.parse(
+		await apiRequest<unknown>("/payments", {
+			method: "POST",
+			auth: false,
+			apiKey,
+			body: JSON.stringify(body),
+		}),
+	);
+}
+
 const logSchema = z.object({
 	id: z.uuid(),
 	requestId: z.uuid(),
@@ -111,6 +133,62 @@ export const deliverySchema = z.object({
 });
 
 export type FinancialDelivery = z.infer<typeof deliverySchema>;
+
+const providerActivityItemSchema = z.object({
+	id: z.string(),
+	reference: z.string().nullable(),
+	status: z.string(),
+	amount: z.string().nullable(),
+	currency: z.string().nullable(),
+	occurredAt: z.string().nullable(),
+	channel: z.string().nullable().optional(),
+});
+
+const providerOverviewSectionSchema = <T extends z.ZodType>(schema: T) =>
+	z.object({
+		state: z.enum(["available", "unavailable"]),
+		data: schema.nullable(),
+		message: z.string().optional(),
+	});
+
+export const providerOverviewSchema = z.object({
+	provider: z.enum(["paystack", "flutterwave", "mono"]),
+	fetchedAt: z.string(),
+	source: z.literal("live"),
+	capabilities: z.array(z.string()),
+	balances: providerOverviewSectionSchema(
+		z.array(
+			z.object({
+				currency: z.string(),
+				available: z.string().nullable(),
+				ledger: z.string().nullable(),
+			}),
+		),
+	),
+	totals: providerOverviewSectionSchema(
+		z.object({
+			transactionCount: z.number().nullable(),
+			volumeByCurrency: z.array(z.object({ currency: z.string(), amount: z.string() })),
+			pendingPayouts: z.number().nullable(),
+		}),
+	),
+	payments: providerOverviewSectionSchema(z.array(providerActivityItemSchema)),
+	payouts: providerOverviewSectionSchema(z.array(providerActivityItemSchema)),
+	virtualAccounts: providerOverviewSectionSchema(
+		z.array(
+			z.object({
+				id: z.string(),
+				bankName: z.string().nullable(),
+				accountNumber: z.string().nullable(),
+				maskedAccountNumber: z.string().nullable(),
+				status: z.string(),
+				createdAt: z.string().nullable(),
+			}),
+		),
+	),
+});
+
+export type ProviderOverview = z.infer<typeof providerOverviewSchema>;
 
 const routingPolicySchema = z.object({
 	id: z.uuid().nullable(),

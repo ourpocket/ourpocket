@@ -1,5 +1,6 @@
 "use client";
 
+import { ProviderActivityOverview } from "@/components/module/provider-activity-overview";
 import { DashboardSkeleton } from "@/components/modules/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useCurrentProject } from "@/hooks/use-current-project";
@@ -82,7 +83,7 @@ const formatNumber = (value: number) =>
 	}).format(value);
 
 export default function DashboardOverview() {
-	const { project, isLoading } = useCurrentProject();
+	const { project, environment, isLoading } = useCurrentProject();
 	const { getUsageMetrics } = useUsageMetrics();
 	const [metrics, setMetrics] = useState<UsageMetrics>(emptyMetrics);
 
@@ -143,6 +144,7 @@ export default function DashboardOverview() {
 
 	return (
 		<div className="space-y-6">
+			{environment === "production" && <ProviderActivityOverview />}
 			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
 				{stats.map((stat) => (
 					<StatCard key={stat.title} {...stat} />
