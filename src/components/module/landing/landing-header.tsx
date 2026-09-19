@@ -17,7 +17,7 @@ export function LandingHeader() {
 				rel="noreferrer"
 			>
 				<span className="announcement-badge">OPEN</span>
-				<span>OurPocket is building the open wallet infrastructure layer</span>
+				<span>Sandbox payments today. Paystack and Flutterwave when you go live.</span>
 				<strong>
 					View the repository <ArrowRight size={14} />
 				</strong>
@@ -29,22 +29,29 @@ export function LandingHeader() {
 						aria-label="Main navigation"
 						className={`landing-nav-links${menuOpen ? " is-open" : ""}`}
 					>
-						{navItems.map((item) => (
-							<a
-								key={item}
-								href={
-									item === "Developers"
-										? "#developers"
-										: item === "Product"
-											? "#infrastructure"
-											: "#workflow"
-								}
-								onClick={() => setMenuOpen(false)}
-							>
-								{item}
-								<ChevronDown size={13} />
-							</a>
-						))}
+						{navItems.map((item) =>
+							item === "Pricing" ? (
+								<Link key={item} to="/pricing" onClick={() => setMenuOpen(false)}>
+									{item}
+									<ChevronDown size={13} />
+								</Link>
+							) : (
+								<a
+									key={item}
+									href={
+										item === "Developers"
+											? "/#developers"
+											: item === "Product"
+												? "/#infrastructure"
+												: "/#workflow"
+									}
+									onClick={() => setMenuOpen(false)}
+								>
+									{item}
+									<ChevronDown size={13} />
+								</a>
+							),
+						)}
 					</nav>
 					<div className="landing-nav-actions">
 						<a

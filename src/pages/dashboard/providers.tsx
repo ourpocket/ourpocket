@@ -1,17 +1,11 @@
 import DashboardLayout from "@/components/layouts/dashboard-layout";
+import { CustomModal, CustomModalCancel } from "@/components/modules/custom-modal";
+import { Fallback } from "@/components/modules/fallback";
+import { CardGridSkeleton, DashboardSkeleton } from "@/components/modules/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Typography } from "@/components/ui/typography";
 import { useCurrentProject } from "@/hooks/use-current-project";
 import { ApiError } from "@/services/api-client";
@@ -202,55 +196,48 @@ function ProviderConnectionDialog({
 	};
 
 	return (
-		<Dialog open={Boolean(target)} onOpenChange={(open) => !open && onClose()}>
-			<DialogContent className="border-white/10 bg-[#1b1b1b] text-white sm:max-w-md">
-				<DialogHeader>
-					<DialogTitle>
-						{isManaging ? "Manage" : "Connect"} {providerName}
-					</DialogTitle>
-					<DialogDescription className="leading-6 text-zinc-400">
-						These credentials are encrypted and used only by {projectName}.
-					</DialogDescription>
-				</DialogHeader>
+		<CustomModal
+			open={Boolean(target)}
+			onOpenChange={(open) => !open && onClose()}
+			title={`${isManaging ? "Manage" : "Connect"} ${providerName}`}
+			description={`These credentials are encrypted and used only by ${projectName}.`}
+			contentClassName="sm:max-w-md"
+		>
+			<form onSubmit={handleSubmit} className="space-y-5">
+				{credentialFields.map((field) => (
+					<div key={field.key} className="space-y-2">
+						<Label htmlFor={`provider-${field.key}`}>
+							{field.label}
+							{!field.required && <span className="text-zinc-500"> (optional)</span>}
+						</Label>
+						<Input
+							id={`provider-${field.key}`}
+							type={field.type === "secret" ? "password" : "text"}
+							value={values[field.key] ?? ""}
+							onChange={(event) =>
+								setValues((current) => ({ ...current, [field.key]: event.target.value }))
+							}
+							placeholder={field.placeholder}
+							disabled={isSubmitting}
+						/>
+					</div>
+				))}
 
-				<form onSubmit={handleSubmit} className="space-y-5">
-					{credentialFields.map((field) => (
-						<div key={field.key} className="space-y-2">
-							<Label htmlFor={`provider-${field.key}`}>
-								{field.label}
-								{!field.required && <span className="text-zinc-500"> (optional)</span>}
-							</Label>
-							<Input
-								id={`provider-${field.key}`}
-								type={field.type === "secret" ? "password" : "text"}
-								value={values[field.key] ?? ""}
-								onChange={(event) =>
-									setValues((current) => ({ ...current, [field.key]: event.target.value }))
-								}
-								placeholder={field.placeholder}
-								disabled={isSubmitting}
-							/>
-						</div>
-					))}
+				{errorMessage && (
+					<p role="alert" className="text-sm text-red-300">
+						{errorMessage}
+					</p>
+				)}
 
-					{errorMessage && (
-						<p role="alert" className="text-sm text-red-300">
-							{errorMessage}
-						</p>
-					)}
-
-					<DialogFooter>
-						<Button type="button" variant="ghost" onClick={onClose} disabled={isSubmitting}>
-							Cancel
-						</Button>
-						<Button type="submit" disabled={isSubmitting}>
-							{isSubmitting && <LoaderCircle className="animate-spin" aria-hidden="true" />}
-							{isSubmitting ? "Saving…" : isManaging ? "Save connection" : "Connect provider"}
-						</Button>
-					</DialogFooter>
-				</form>
-			</DialogContent>
-		</Dialog>
+				<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+					<CustomModalCancel disabled={isSubmitting} />
+					<Button type="submit" disabled={isSubmitting}>
+						{isSubmitting && <LoaderCircle className="animate-spin" aria-hidden="true" />}
+						{isSubmitting ? "Saving…" : isManaging ? "Save connection" : "Connect provider"}
+					</Button>
+				</div>
+			</form>
+		</CustomModal>
 	);
 }
 
@@ -349,7 +336,7 @@ function WalletProvidersContent() {
 	};
 
 	if (isProjectLoading) {
-		return <Skeleton className="h-80 w-full" />;
+		return <DashboardSkeleton />;
 	}
 
 	if (!project) {
@@ -421,25 +408,15 @@ function WalletProvidersContent() {
 					</div>
 				</div>
 			) : isLoading ? (
-				<div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-					{Array.from({ length: 6 }, (_, index) => (
-						<Skeleton key={index} className="h-64 w-full" />
-					))}
-				</div>
+				<CardGridSkeleton />
 			) : activeView === "connected" ? (
 				projectProviders.length === 0 ? (
-					<div className="rounded-xl border border-dashed border-white/[0.12] bg-white/[0.015] px-6 py-14 text-center">
-						<Link2 className="mx-auto size-6 text-zinc-500" aria-hidden="true" />
-						<Typography variant="heading" className="mt-4">
-							No providers connected yet
-						</Typography>
-						<Typography className="mx-auto mt-2 max-w-md">
-							Browse the catalog to connect the provider account this project will use.
-						</Typography>
-						<Button type="button" className="mt-5" onClick={() => setActiveView("catalog")}>
-							Browse catalog
-						</Button>
-					</div>
+					<Fallback
+						title="No providers connected yet"
+						description="Browse the catalog to connect the provider account this project will use."
+						icon={<Link2 className="size-5" aria-hidden="true" />}
+						action={{ label: "Browse catalog", onClick: () => setActiveView("catalog") }}
+					/>
 				) : (
 					<div className="divide-y divide-white/[0.07] overflow-hidden rounded-xl border border-white/[0.08] bg-[#1b1b1b]">
 						{projectProviders.map((connection) => {
@@ -640,9 +617,10 @@ function WalletProvidersContent() {
 						})}
 
 						{filteredCatalog.length === 0 && (
-							<div className="rounded-xl border border-dashed border-white/[0.12] bg-white/[0.015] p-12 text-center">
-								<Typography>No providers match your search.</Typography>
-							</div>
+							<Fallback
+								title="No matching providers"
+								description="Try another search term or select a different category."
+							/>
 						)}
 					</div>
 				</>

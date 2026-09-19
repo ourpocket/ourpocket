@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as OnboardingWorkspaceRouteImport } from './routes/onboarding/workspace'
@@ -17,6 +18,7 @@ import { Route as DashboardWebhooksRouteImport } from './routes/dashboard/webhoo
 import { Route as DashboardWalletsRouteImport } from './routes/dashboard/wallets'
 import { Route as DashboardWalletProvidersRouteImport } from './routes/dashboard/wallet-providers'
 import { Route as DashboardTransactionsRouteImport } from './routes/dashboard/transactions'
+import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
 import { Route as DashboardProjectsRouteImport } from './routes/dashboard/projects'
 import { Route as DashboardApiLogsRouteImport } from './routes/dashboard/api-logs'
 import { Route as DashboardApiKeyRouteImport } from './routes/dashboard/api-key'
@@ -26,6 +28,11 @@ import { Route as AuthRegisterRouteImport } from './routes/auth/register'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
 
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -65,6 +72,11 @@ const DashboardWalletProvidersRoute =
 const DashboardTransactionsRoute = DashboardTransactionsRouteImport.update({
   id: '/dashboard/transactions',
   path: '/dashboard/transactions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
+  id: '/dashboard/settings',
+  path: '/dashboard/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardProjectsRoute = DashboardProjectsRouteImport.update({
@@ -110,6 +122,7 @@ const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/pricing': typeof PricingRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
@@ -118,6 +131,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/api-key': typeof DashboardApiKeyRoute
   '/dashboard/api-logs': typeof DashboardApiLogsRoute
   '/dashboard/projects': typeof DashboardProjectsRoute
+  '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/transactions': typeof DashboardTransactionsRoute
   '/dashboard/wallet-providers': typeof DashboardWalletProvidersRoute
   '/dashboard/wallets': typeof DashboardWalletsRoute
@@ -128,6 +142,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/pricing': typeof PricingRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
@@ -136,6 +151,7 @@ export interface FileRoutesByTo {
   '/dashboard/api-key': typeof DashboardApiKeyRoute
   '/dashboard/api-logs': typeof DashboardApiLogsRoute
   '/dashboard/projects': typeof DashboardProjectsRoute
+  '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/transactions': typeof DashboardTransactionsRoute
   '/dashboard/wallet-providers': typeof DashboardWalletProvidersRoute
   '/dashboard/wallets': typeof DashboardWalletsRoute
@@ -147,6 +163,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/pricing': typeof PricingRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
@@ -155,6 +172,7 @@ export interface FileRoutesById {
   '/dashboard/api-key': typeof DashboardApiKeyRoute
   '/dashboard/api-logs': typeof DashboardApiLogsRoute
   '/dashboard/projects': typeof DashboardProjectsRoute
+  '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/transactions': typeof DashboardTransactionsRoute
   '/dashboard/wallet-providers': typeof DashboardWalletProvidersRoute
   '/dashboard/wallets': typeof DashboardWalletsRoute
@@ -167,6 +185,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/pricing'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
@@ -175,6 +194,7 @@ export interface FileRouteTypes {
     | '/dashboard/api-key'
     | '/dashboard/api-logs'
     | '/dashboard/projects'
+    | '/dashboard/settings'
     | '/dashboard/transactions'
     | '/dashboard/wallet-providers'
     | '/dashboard/wallets'
@@ -185,6 +205,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/pricing'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
@@ -193,6 +214,7 @@ export interface FileRouteTypes {
     | '/dashboard/api-key'
     | '/dashboard/api-logs'
     | '/dashboard/projects'
+    | '/dashboard/settings'
     | '/dashboard/transactions'
     | '/dashboard/wallet-providers'
     | '/dashboard/wallets'
@@ -203,6 +225,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/pricing'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
@@ -211,6 +234,7 @@ export interface FileRouteTypes {
     | '/dashboard/api-key'
     | '/dashboard/api-logs'
     | '/dashboard/projects'
+    | '/dashboard/settings'
     | '/dashboard/transactions'
     | '/dashboard/wallet-providers'
     | '/dashboard/wallets'
@@ -222,6 +246,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  PricingRoute: typeof PricingRoute
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
   AuthLoginRoute: typeof AuthLoginRoute
   AuthRegisterRoute: typeof AuthRegisterRoute
@@ -230,6 +255,7 @@ export interface RootRouteChildren {
   DashboardApiKeyRoute: typeof DashboardApiKeyRoute
   DashboardApiLogsRoute: typeof DashboardApiLogsRoute
   DashboardProjectsRoute: typeof DashboardProjectsRoute
+  DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardTransactionsRoute: typeof DashboardTransactionsRoute
   DashboardWalletProvidersRoute: typeof DashboardWalletProvidersRoute
   DashboardWalletsRoute: typeof DashboardWalletsRoute
@@ -241,6 +267,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -295,6 +328,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard/transactions'
       fullPath: '/dashboard/transactions'
       preLoaderRoute: typeof DashboardTransactionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/settings': {
+      id: '/dashboard/settings'
+      path: '/dashboard/settings'
+      fullPath: '/dashboard/settings'
+      preLoaderRoute: typeof DashboardSettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard/projects': {
@@ -358,6 +398,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  PricingRoute: PricingRoute,
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,
   AuthLoginRoute: AuthLoginRoute,
   AuthRegisterRoute: AuthRegisterRoute,
@@ -366,6 +407,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardApiKeyRoute: DashboardApiKeyRoute,
   DashboardApiLogsRoute: DashboardApiLogsRoute,
   DashboardProjectsRoute: DashboardProjectsRoute,
+  DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardTransactionsRoute: DashboardTransactionsRoute,
   DashboardWalletProvidersRoute: DashboardWalletProvidersRoute,
   DashboardWalletsRoute: DashboardWalletsRoute,

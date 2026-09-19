@@ -1,5 +1,8 @@
 import DashboardLayout from "@/components/layouts/dashboard-layout";
 import { ModularCard } from "@/components/module/card";
+import { CustomSheet } from "@/components/modules/custom-sheet";
+import { Fallback } from "@/components/modules/fallback";
+import { TableSkeleton } from "@/components/modules/skeleton";
 import { Button } from "@/components/ui/button";
 import { SyntaxCode } from "@/components/ui/syntax-code";
 import {
@@ -10,6 +13,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { Typography } from "@/components/ui/typography";
 import { useCurrentProject } from "@/hooks/use-current-project";
 import { type FinancialLog, listFinancialLogs } from "@/services/financial.service";
 import { useEffect, useState } from "react";
@@ -50,53 +54,74 @@ export default function ApiLogsPage() {
 			description="Trace application and provider requests. Logs are retained for seven days."
 		>
 			<div className="space-y-6">
-				{error && (
-					<p role="alert" className="text-red-300">
-						{error}
-					</p>
-				)}
+				{error && <Fallback tone="error" title="Could not load API logs" description={error} />}
 				<ModularCard title="Requests" content>
-					<div className="overflow-x-auto">
-						<Table>
-							<TableHeader>
-								<TableRow>
-									{["Request ID", "Operation", "Source", "Created", "Action"].map((label) => (
-										<TableHead key={label}>{label}</TableHead>
-									))}
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{logs.map((log) => (
-									<TableRow key={log.id}>
-										<TableCell className="font-mono text-xs">{log.requestId}</TableCell>
-										<TableCell>{log.operation}</TableCell>
-										<TableCell>{log.source}</TableCell>
-										<TableCell>{new Date(log.createdAt).toLocaleString()}</TableCell>
-										<TableCell>
-											<Button size="sm" variant="outline" onClick={() => setSelected(log)}>
-												Inspect
-											</Button>
-										</TableCell>
+					{loading ? (
+						<TableSkeleton />
+					) : logs.length > 0 ? (
+						<div className="overflow-x-auto">
+							<Table>
+								<TableHeader>
+									<TableRow>
+										{["Request ID", "Operation", "Source", "Created", "Action"].map((label) => (
+											<TableHead key={label}>{label}</TableHead>
+										))}
 									</TableRow>
-								))}
-							</TableBody>
-						</Table>
-					</div>
-					{!logs.length && (
-						<p className="py-6 text-sm text-gray-400">
-							{loading ? "Loading requests…" : "No requests in this environment yet."}
-						</p>
+								</TableHeader>
+								<TableBody>
+									{logs.map((log) => (
+										<TableRow key={log.id}>
+											<TableCell>
+												<Typography as="span" variant="caption" className="font-mono text-white/60">
+													{log.requestId}
+												</Typography>
+											</TableCell>
+											<TableCell>
+												<Typography as="span" className="text-white/70">
+													{log.operation}
+												</Typography>
+											</TableCell>
+											<TableCell>
+												<Typography as="span" className="text-white/70">
+													{log.source}
+												</Typography>
+											</TableCell>
+											<TableCell>
+												<Typography as="span" className="text-white/55">
+													{new Date(log.createdAt).toLocaleString()}
+												</Typography>
+											</TableCell>
+											<TableCell>
+												<Button size="sm" variant="outline" onClick={() => setSelected(log)}>
+													Inspect
+												</Button>
+											</TableCell>
+										</TableRow>
+									))}
+								</TableBody>
+							</Table>
+						</div>
+					) : (
+						<Fallback
+							title="No API requests yet"
+							description="Requests made in this project and environment will appear here."
+						/>
 					)}
 				</ModularCard>
-				{selected && (
-					<ModularCard title="Request details" content>
+				<CustomSheet
+					open={Boolean(selected)}
+					onOpenChange={(open) => !open && setSelected(null)}
+					title={selected ? selected.operation : "API request"}
+					description={selected ? `Request ${selected.requestId}` : undefined}
+				>
+					{selected && (
 						<SyntaxCode
 							code={JSON.stringify(selected, null, 2)}
 							language="json"
 							label="request.json"
 						/>
-					</ModularCard>
-				)}
+					)}
+				</CustomSheet>
 			</div>
 		</DashboardLayout>
 	);

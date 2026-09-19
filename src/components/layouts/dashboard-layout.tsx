@@ -5,6 +5,7 @@ import {
 import DashboardHeader from "@/components/module/dashboard/header.tsx";
 import PageInfo from "@/components/module/dashboard/page-info.tsx";
 import DashboardSidebar from "@/components/module/dashboard/sidebar";
+import { DashboardSkeleton } from "@/components/modules/skeleton";
 import { Button } from "@/components/ui/button";
 import { accountMenuItems, mainMenuItems, supportMenuItems } from "@/config/sidebar";
 import { useProjects } from "@/hooks/use-projects";
@@ -15,7 +16,7 @@ import { ApiError } from "@/services/api-client";
 import { getMyPlatformAccount } from "@/services/platform-account.service";
 import type { PlatformAccount } from "@/services/types";
 import { useLocation, useNavigate } from "@tanstack/react-router";
-import { AlertCircle, LoaderCircle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 
@@ -149,12 +150,7 @@ const DashboardLayout = ({ children, title, description, actionTab }: Props) => 
 
 	const renderMainContent = () => {
 		if (platformAccountStatus === "checking") {
-			return (
-				<div className="flex min-h-48 items-center gap-3 text-sm text-gray-400">
-					<LoaderCircle className="size-4 animate-spin text-orange-400" aria-hidden="true" />
-					Checking your workspace…
-				</div>
-			);
+			return <DashboardSkeleton />;
 		}
 
 		if (platformAccountStatus === "error") {
@@ -187,7 +183,7 @@ const DashboardLayout = ({ children, title, description, actionTab }: Props) => 
 				{canRender ? (
 					<div key={`${selectedProjectId}:${environment}`}>{children}</div>
 				) : (
-					<p className="text-sm text-gray-500">Loading project…</p>
+					<DashboardSkeleton />
 				)}
 			</PlatformAccountContext.Provider>
 		);

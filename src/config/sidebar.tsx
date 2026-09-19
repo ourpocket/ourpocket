@@ -1,5 +1,14 @@
 import type { SidebarItem } from "@/components/module/dashboard/sidebar";
-import { CardSend, Cloud, Code, DocumentText, Home, Key, WalletAdd } from "iconsax-reactjs";
+import {
+	CardSend,
+	Cloud,
+	Code,
+	DocumentText,
+	Home,
+	Key,
+	Setting2,
+	WalletAdd,
+} from "iconsax-reactjs";
 
 export const mainMenuItems: SidebarItem[] = [
 	{
@@ -53,6 +62,13 @@ export const mainMenuItems: SidebarItem[] = [
 	},
 ];
 
-export const accountMenuItems: SidebarItem[] = [];
+export const accountMenuItems: SidebarItem[] = [
+	{
+		icon: <Setting2 size={20} variant="Bulk" />,
+		label: "Settings",
+		href: "/dashboard/settings",
+		isActive: <Setting2 size={20} variant="Bold" color="orange" />,
+	},
+];
 
 export const supportMenuItems: SidebarItem[] = [];

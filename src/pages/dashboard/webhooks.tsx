@@ -130,7 +130,11 @@ function WebhooksContent() {
 			title="Webhooks"
 			description="Inspect, test, and replay signed event deliveries."
 			actionTab={
-				<ModularModals trigger={<Button>Add Endpoint</Button>}>
+				<ModularModals
+					trigger={<Button>Add Endpoint</Button>}
+					title="Add webhook endpoint"
+					description="Receive signed events for the selected project and environment."
+				>
 					<form className="space-y-4" onSubmit={create}>
 						<Label className="grid gap-2">
 							Endpoint URL

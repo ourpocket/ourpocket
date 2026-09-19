@@ -1,3 +1,5 @@
+import { Typography } from "@/components/ui/typography";
+
 const providers = [
 	{ name: "Paystack", logo: "/img/paystack_logo.svg" },
 	{ name: "Flutterwave", logo: "/img/flutterwave_logo.svg" },
@@ -10,7 +12,9 @@ const providers = [
 export function ProviderMarquee() {
 	return (
 		<section className="provider-strip" aria-label="Supported wallet providers">
-			<p>Connect the providers your product already depends on.</p>
+			<Typography>
+				Paystack and Flutterwave are live. Explore the wider provider catalog.
+			</Typography>
 			<div className="provider-list">
 				{providers.map((provider) => (
 					<span key={provider.name} className="provider-logo">

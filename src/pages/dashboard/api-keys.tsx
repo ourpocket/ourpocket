@@ -22,11 +22,11 @@ const GenerateNewApiKey = ({ projectId, onGenerated }: GenerateNewApiKeyProps) =
 	}
 
 	return (
-		<ModularModals trigger={<Button variant={"sleep"}>Generate API Key</Button>}>
-			<div className={"mb-4"}>
-				<h4 className={"text-lg font-semibold"}>Generate New API Key</h4>
-				<small className={"text-white/70"}>Generate a project key for your application</small>
-			</div>
+		<ModularModals
+			trigger={<Button variant="sleep">Generate API Key</Button>}
+			title="Generate API key"
+			description="Create an environment-scoped key for your application."
+		>
 			<GenerateApiKeyModal projectId={projectId} onGenerated={onGenerated} />
 		</ModularModals>
 	);
@@ -40,6 +40,7 @@ const scopeTitle: Record<ProjectApiKeyScope, string> = {
 async function copyText(value: string) {
 	if (navigator.clipboard?.writeText) {
 		await navigator.clipboard.writeText(value);
+
 		return;
 	}
 
@@ -66,8 +67,10 @@ const ApiKeyCard = ({
 	const [isVisible, setIsVisible] = useState(false);
 	const canRevealFullKey = Boolean(apiKey.rawKey);
 	const displayKey = apiKey.rawKey ?? apiKey.keyPreview ?? apiKey.id;
+
 	const maskedKey =
 		displayKey.length > 18 ? `${displayKey.slice(0, 14)}${"*".repeat(8)}` : displayKey;
+
 	const keyText = isVisible || !canRevealFullKey ? displayKey : maskedKey;
 
 	const handleCopy = async () => {
@@ -75,11 +78,13 @@ const ApiKeyCard = ({
 			await copyText(displayKey);
 		} catch {
 			toast.error("Could not copy API key");
+
 			return;
 		}
 
 		if (apiKey.rawKey) {
 			toast.success("API key copied");
+
 			return;
 		}
 
@@ -147,6 +152,7 @@ const ApiKeysPage = () => {
 
 			try {
 				const keys = await listProjectApiKeys(project.id);
+
 				if (isMounted) {
 					setApiKeys(keys);
 				}

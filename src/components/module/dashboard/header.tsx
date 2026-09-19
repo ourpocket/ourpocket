@@ -1,13 +1,5 @@
+import { LogoutModal } from "@/components/modules/logout-modal";
 import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogClose,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -90,30 +82,11 @@ const DashboardHeader = () => {
 				</div>
 			</div>
 
-			<Dialog open={isLogoutDialogOpen} onOpenChange={setIsLogoutDialogOpen}>
-				<DialogContent className="border-white/[0.09] !bg-[#1b1b1b] text-white sm:max-w-sm">
-					<DialogHeader>
-						<DialogTitle>Log out of OurPocket?</DialogTitle>
-						<DialogDescription className="leading-6 text-white/45">
-							You will need to sign in again to access this workspace.
-						</DialogDescription>
-					</DialogHeader>
-					<DialogFooter>
-						<DialogClose asChild>
-							<Button
-								type="button"
-								variant="outline"
-								className="border-white/[0.09] !bg-transparent text-white/65 hover:!bg-white/[0.05] hover:text-white"
-							>
-								Stay signed in
-							</Button>
-						</DialogClose>
-						<Button type="button" onClick={() => void handleLogout()}>
-							Log out
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
+			<LogoutModal
+				open={isLogoutDialogOpen}
+				onOpenChange={setIsLogoutDialogOpen}
+				onConfirm={() => void handleLogout()}
+			/>
 		</>
 	);
 };
