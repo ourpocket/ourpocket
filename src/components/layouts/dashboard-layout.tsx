@@ -8,6 +8,7 @@ import DashboardSidebar from "@/components/module/dashboard/sidebar";
 import { Button } from "@/components/ui/button";
 import { accountMenuItems, mainMenuItems, supportMenuItems } from "@/config/sidebar";
 import { useProjects } from "@/hooks/use-projects";
+import { useEnvironment, useSelectedProjectId } from "@/lib/environment";
 import { getSafeDashboardReturnPath } from "@/lib/onboarding";
 import { clearStoredProjectId, getAuthToken, getStoredProjectId } from "@/lib/session";
 import { ApiError } from "@/services/api-client";
@@ -29,9 +30,18 @@ type PlatformAccountStatus = "checking" | "missing" | "ready" | "error";
 
 const DashboardLayout = ({ children, title, description, actionTab }: Props) => {
 	const navigate = useNavigate();
+	const environment = useEnvironment();
+	const selectedProjectId = useSelectedProjectId();
 	const location = useLocation();
 	const { listProjects } = useProjects();
-	const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+	const [isSidebarOpen, setIsSidebarOpen] = useState(
+		() => window.matchMedia("(min-width: 1024px)").matches,
+	);
+
+	useEffect(() => {
+		if (!window.matchMedia("(min-width: 1024px)").matches) setIsSidebarOpen(false);
+	}, [location.pathname]);
 	const [canRender, setCanRender] = useState(false);
 	const [platformAccount, setPlatformAccount] = useState<PlatformAccount | null>(null);
 
@@ -174,7 +184,11 @@ const DashboardLayout = ({ children, title, description, actionTab }: Props) => 
 
 		return (
 			<PlatformAccountContext.Provider value={platformAccountContext}>
-				{canRender ? children : <p className="text-sm text-gray-500">Loading project…</p>}
+				{canRender ? (
+					<div key={`${selectedProjectId}:${environment}`}>{children}</div>
+				) : (
+					<p className="text-sm text-gray-500">Loading project…</p>
+				)}
 			</PlatformAccountContext.Provider>
 		);
 	};
@@ -189,7 +203,7 @@ const DashboardLayout = ({ children, title, description, actionTab }: Props) => 
 				setIsSidebarOpen={setIsSidebarOpen}
 			/>
 
-			<main className="w-full">
+			<main className="w-full min-w-0">
 				<DashboardHeader />
 				<div className="flex-1 overflow-y-auto p-6">
 					<div className="container">

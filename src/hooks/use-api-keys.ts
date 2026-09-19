@@ -7,6 +7,8 @@ function useApiKeys() {
 
 	return {
 		isLoading,
+		rotateProjectApiKey: (projectId: string, apiKeyId: string) =>
+			run(() => apiKeyService.rotateProjectApiKey(projectId, apiKeyId)),
 		listProjectApiKeys: (projectId: string) =>
 			run(() => apiKeyService.listProjectApiKeys(projectId)),
 		createProjectApiKey: (

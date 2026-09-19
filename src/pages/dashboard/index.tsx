@@ -86,6 +86,7 @@ export default function DashboardOverview() {
 
 	useEffect(() => {
 		let isMounted = true;
+		setMetrics(emptyMetrics);
 
 		async function loadMetrics() {
 			if (!project) {

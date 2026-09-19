@@ -152,6 +152,8 @@ const DashboardSidebar = ({
 				variant="ghost"
 				size="icon"
 				className={sidebarStyles.toggleButton}
+				aria-label="Toggle navigation"
+				aria-expanded={isSidebarOpen}
 				onClick={() => setIsSidebarOpen(!isSidebarOpen)}
 			>
 				<Menu className="h-6 w-6" />

@@ -45,6 +45,12 @@ export const mainMenuItems: SidebarItem[] = [
 		href: "/dashboard/transactions",
 		isActive: <CardSend size={20} variant={"Bold"} color={"orange"} />,
 	},
+	{
+		icon: <Code size={20} variant="Bulk" />,
+		label: "API Logs",
+		href: "/dashboard/api-logs",
+		isActive: <Code size={20} variant="Bold" color="orange" />,
+	},
 ];
 
 export const accountMenuItems: SidebarItem[] = [];

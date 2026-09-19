@@ -1,3 +1,4 @@
+import { getEnvironment } from "@/lib/environment";
 import { getAuthToken } from "@/lib/session";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/v1";
@@ -28,6 +29,7 @@ class ApiError extends Error {
 async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
 	const { auth = true, apiKey, versioned = true, ...requestOptions } = options;
 	const headers = new Headers(requestOptions.headers);
+	headers.set("X-Environment", getEnvironment());
 
 	if (!headers.has("Content-Type") && requestOptions.body) {
 		headers.set("Content-Type", "application/json");

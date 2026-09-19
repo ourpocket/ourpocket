@@ -28,6 +28,8 @@ const CreateProjectForm = ({
 }) => {
 	const { createProject, isLoading } = useProjects();
 
+	const [createdProject, setCreatedProject] = useState<Project | null>(null);
+	const [sandboxKey, setSandboxKey] = useState<string | null>(null);
 	const [form, setForm] = useState({
 		name: "",
 		description: "",
@@ -42,10 +44,23 @@ const CreateProjectForm = ({
 		});
 
 		setStoredProjectId(project.id);
+		setSandboxKey(project.sandboxKey ?? null);
 		setForm({ name: "", description: "" });
-		onCreated(project);
+		setCreatedProject(project);
 		toast.success("Project created");
 	};
+
+	if (sandboxKey && createdProject)
+		return (
+			<div className="space-y-3">
+				<p className="text-sm">Save this sandbox key now. It is shown only once.</p>
+				<code className="block break-all rounded-md bg-black/20 p-3 text-sm">{sandboxKey}</code>
+				<Button variant="outline" onClick={() => void navigator.clipboard.writeText(sandboxKey)}>
+					Copy sandbox key
+				</Button>
+				<Button onClick={() => onCreated(createdProject)}>Continue to dashboard</Button>
+			</div>
+		);
 
 	return (
 		<form onSubmit={handleCreateProject} className="space-y-3">
@@ -60,6 +75,19 @@ const CreateProjectForm = ({
 				onChange={(event) => setForm({ ...form, description: event.target.value })}
 				placeholder="Description"
 			/>
+			{sandboxKey && (
+				<div role="status" className="space-y-2 rounded-md bg-black/20 p-3 text-sm">
+					<p>Save this sandbox key now. It is shown only once.</p>
+					<code className="block break-all">{sandboxKey}</code>
+					<Button
+						type="button"
+						variant="outline"
+						onClick={() => void navigator.clipboard.writeText(sandboxKey)}
+					>
+						Copy sandbox key
+					</Button>
+				</div>
+			)}
 			<Button type="submit" disabled={isLoading}>
 				Create Project
 			</Button>

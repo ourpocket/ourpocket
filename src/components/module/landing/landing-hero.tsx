@@ -1,6 +1,6 @@
 import { CodePane } from "@/components/module/landing/code-pane";
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, Copy } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 export function LandingHero() {
 	return (
@@ -25,7 +25,7 @@ export function LandingHero() {
 							Explore docs
 						</a>
 					</div>
-					<div className="install-command">
+					{/* <div className="install-command">
 						<div className="sdk-list">
 							<span>TS</span>
 							<span>PY</span>
@@ -35,7 +35,7 @@ export function LandingHero() {
 						<button type="button" aria-label="Copy installation command">
 							<Copy size={16} />
 						</button>
-					</div>
+					</div> */}
 					<p className="hero-proof-line">
 						<strong>Open source</strong> wallet infrastructure for fintech engineers and product
 						teams.

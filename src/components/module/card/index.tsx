@@ -7,7 +7,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 interface ModularCardProps {
 	title?: string | ReactNode;
