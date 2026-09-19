@@ -44,7 +44,9 @@ export function DeveloperCta() {
 				<nav aria-label="Footer navigation">
 					<a href="/#infrastructure">Infrastructure</a>
 					<a href="/#workflow">How it works</a>
-					<a href="https://github.com/ourpocket/ourpocket">Documentation</a>
+				<a href="https://github.com/ourpocket/doc" target="_blank" rel="noreferrer">
+					Documentation
+				</a>
 					<Link to="/pricing">Pricing</Link>
 					<Link to="/auth/login">Sign in</Link>
 				</nav>
