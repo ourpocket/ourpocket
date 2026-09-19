@@ -9,11 +9,11 @@ export function LandingHero() {
 			<div className="landing-hero landing-shell">
 				<div className="hero-copy">
 					<Typography as="h1" variant="display" className="hero-title">
-						Integrate once. Run every financial provider.
+						One integration. Total control of your financial stack.
 					</Typography>
 					<Typography className="hero-description">
-						Connect payments and wallets through one control plane. Route transactions, monitor
-						providers, and reconcile every operation without rebuilding your stack.
+						Connect payments and wallets through one control plane. Route checkouts, trace provider
+						decisions, and reconcile uncertain operations without rebuilding your stack.
 					</Typography>
 					<div className="hero-actions">
 						<Link className="landing-button landing-button-primary" to="/auth/register">

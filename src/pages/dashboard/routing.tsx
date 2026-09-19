@@ -3,6 +3,7 @@ import { ModularCard } from "@/components/module/card";
 import { DashboardSkeleton } from "@/components/modules/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
 	Select,
@@ -22,27 +23,28 @@ import {
 	listProviderHealth,
 	listReconciliationRuns,
 	runReconciliation,
+	saveProviderHealth,
 	saveRoutingPolicy,
 } from "@/services/financial.service";
 import { Activity, RefreshCw, Route, ShieldCheck } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 const strategies: Array<{ value: RoutingPolicy["strategy"]; label: string; detail: string }> = [
 	{
 		value: "best_success_rate",
 		label: "Best success rate",
-		detail: "Prefer the provider with the strongest verified completion rate.",
+		detail: "Compare settled payment outcomes. With no history, use your priority order.",
 	},
 	{
 		value: "lowest_fees",
 		label: "Lowest fees",
-		detail: "Prefer the lowest configured provider cost.",
+		detail: "Compare configured fee estimates. With no estimates, use your priority order.",
 	},
 	{
 		value: "fastest_response",
 		label: "Fastest response",
-		detail: "Prefer the lowest measured provider latency.",
+		detail: "Compare recorded response latency. With no measurements, use your priority order.",
 	},
 	{
 		value: "custom_priority",
@@ -58,8 +60,10 @@ function RoutingContent() {
 	const [runs, setRuns] = useState<ReconciliationRun[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [busy, setBusy] = useState(false);
+	const loadSequence = useRef(0);
 
 	const load = useCallback(async () => {
+		const sequence = ++loadSequence.current;
 		if (!project) return;
 		setLoading(true);
 		try {
@@ -68,19 +72,22 @@ function RoutingContent() {
 				listProviderHealth(project.id),
 				listReconciliationRuns(project.id),
 			]);
-			setPolicy(nextPolicy);
-			setHealth(nextHealth);
-			setRuns(nextRuns);
+			if (sequence === loadSequence.current) {
+				setPolicy(nextPolicy);
+				setHealth(nextHealth);
+				setRuns(nextRuns);
+			}
 		} catch (error) {
-			toast.error(error instanceof Error ? error.message : "Could not load routing controls");
+			if (sequence === loadSequence.current)
+				toast.error(error instanceof Error ? error.message : "Could not load routing controls");
 		} finally {
-			setLoading(false);
+			if (sequence === loadSequence.current) setLoading(false);
 		}
-	}, [project]);
+	}, [project, environment]);
 
 	useEffect(() => {
 		void load();
-	}, [load, environment]);
+	}, [load]);
 
 	if (loading || !policy) return <DashboardSkeleton />;
 
@@ -111,6 +118,23 @@ function RoutingContent() {
 		}
 	};
 
+	const saveHealth = async (provider: ProviderHealth) => {
+		if (!project) return;
+		setBusy(true);
+		try {
+			await saveProviderHealth(project.id, provider.provider, {
+				status: provider.status === "unknown" ? "healthy" : provider.status,
+				estimatedFeeBps: provider.estimatedFeeBps,
+			});
+			setHealth(await listProviderHealth(project.id));
+			toast.success(`${provider.provider} routing signals saved`);
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : "Could not save provider signals");
+		} finally {
+			setBusy(false);
+		}
+	};
+
 	return (
 		<div className="space-y-6">
 			<div className="grid gap-4 md:grid-cols-2">
@@ -132,22 +156,80 @@ function RoutingContent() {
 								{provider.connected ? provider.status : "not connected"}
 							</Badge>
 						</div>
+						<div className="mt-4 grid gap-3 border-t border-white/[0.07] pt-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] xl:items-end">
+							<Label className="grid gap-2 text-xs text-white/60">
+								Operator status
+								<Select
+									value={provider.status === "unknown" ? "healthy" : provider.status}
+									onValueChange={(status) =>
+										setHealth((current) =>
+											current.map((item) =>
+												item.provider === provider.provider
+													? { ...item, status: status as ProviderHealth["status"] }
+													: item,
+											),
+										)
+									}
+								>
+									<SelectTrigger>
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="healthy">Healthy</SelectItem>
+										<SelectItem value="degraded">Degraded</SelectItem>
+										<SelectItem value="down">Down</SelectItem>
+									</SelectContent>
+								</Select>
+							</Label>
+							<Label className="grid gap-2 text-xs text-white/60">
+								Estimated fee (bps)
+								<Input
+									type="number"
+									min={0}
+									max={10000}
+									step={1}
+									value={provider.estimatedFeeBps ?? ""}
+									onChange={(event) =>
+										setHealth((current) =>
+											current.map((item) =>
+												item.provider === provider.provider
+													? {
+															...item,
+															estimatedFeeBps:
+																event.target.value === "" ? null : Number(event.target.value),
+														}
+													: item,
+											),
+										)
+									}
+								/>
+							</Label>
+							<Button disabled={busy} variant="outline" onClick={() => void saveHealth(provider)}>
+								Save
+							</Button>
+						</div>
 						<div className="mt-5 grid grid-cols-3 gap-3 border-t border-white/[0.07] pt-4">
 							<div>
-								<Typography variant="caption">Success</Typography>
+								<Typography variant="caption">Success · {provider.settledCount} settled</Typography>
 								<Typography variant="subheading">
 									{provider.connected || environment === "sandbox"
-										? `${provider.successRate}%`
+										? provider.successRate === null
+											? "—"
+											: `${provider.successRate}%`
 										: "—"}
 								</Typography>
 							</div>
 							<div>
-								<Typography variant="caption">Latency</Typography>
-								<Typography variant="subheading">{provider.p95LatencyMs || "—"} ms</Typography>
+								<Typography variant="caption">Latency · {provider.latencyCount} calls</Typography>
+								<Typography variant="subheading">
+									{provider.p95LatencyMs === null ? "—" : `${provider.p95LatencyMs} ms`}
+								</Typography>
 							</div>
 							<div>
 								<Typography variant="caption">Fee</Typography>
-								<Typography variant="subheading">{provider.estimatedFeeBps || "—"} bps</Typography>
+								<Typography variant="subheading">
+									{provider.estimatedFeeBps === null ? "—" : `${provider.estimatedFeeBps} bps`}
+								</Typography>
 							</div>
 						</div>
 					</article>

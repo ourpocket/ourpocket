@@ -46,10 +46,12 @@ const routingPolicySchema = z.object({
 const providerHealthSchema = z.object({
 	provider: z.enum(["paystack", "flutterwave"]),
 	connected: z.boolean(),
-	status: z.enum(["healthy", "degraded", "down"]),
-	successRate: z.string(),
-	p95LatencyMs: z.number(),
-	estimatedFeeBps: z.number(),
+	status: z.enum(["unknown", "healthy", "degraded", "down"]),
+	successRate: z.string().nullable(),
+	settledCount: z.number(),
+	p95LatencyMs: z.number().nullable(),
+	latencyCount: z.number(),
+	estimatedFeeBps: z.number().nullable(),
 	updatedAt: z.string().nullable(),
 });
 
@@ -128,6 +130,17 @@ export async function listProviderHealth(projectId: string) {
 	return z
 		.array(providerHealthSchema)
 		.parse(await apiRequest<unknown>(`/projects/${projectId}/financial/provider-health`));
+}
+
+export async function saveProviderHealth(
+	projectId: string,
+	provider: ProviderHealth["provider"],
+	input: Pick<ProviderHealth, "status" | "estimatedFeeBps">,
+) {
+	return apiRequest<unknown>(`/projects/${projectId}/financial/provider-health/${provider}`, {
+		method: "POST",
+		body: JSON.stringify(input),
+	});
 }
 
 export async function listReconciliationRuns(projectId: string) {

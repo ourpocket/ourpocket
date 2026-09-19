@@ -205,7 +205,7 @@ export default function FinancialOperations({
 			if (operation === "create_wallet")
 				return pocket.wallets.create(
 					{
-						currency,
+						currency: environment === "sandbox" ? currency : undefined,
 						provider: environment === "production" ? walletProvider : undefined,
 						chain: environment === "production" ? chain : undefined,
 					},
@@ -263,7 +263,7 @@ export default function FinancialOperations({
 
 		if (operation === "create_wallet")
 			return {
-				currency,
+				currency: environment === "sandbox" ? currency : undefined,
 				provider: environment === "production" ? walletProvider : undefined,
 				chain: environment === "production" ? chain : undefined,
 			};
@@ -353,7 +353,9 @@ export default function FinancialOperations({
 							{operation !== "create_wallet" && (
 								<Fields label="Amount (minor units)" value={amount} onChange={setAmount} />
 							)}
-							<Fields label="Currency" value={currency} onChange={setCurrency} />
+							{(!wallets || environment === "sandbox") && (
+								<Fields label="Currency" value={currency} onChange={setCurrency} />
+							)}
 							{operation === "create_wallet" && environment === "production" && (
 								<>
 									<Label className="grid gap-2 text-xs font-medium text-white/65">
@@ -556,7 +558,7 @@ export default function FinancialOperations({
 									<TableCell className="font-mono text-xs">{item.id}</TableCell>
 									<TableCell>{item.kind}</TableCell>
 									<TableCell>
-										{item.kind === "wallet" ? String(item.details.balance) : item.amount}
+										{item.kind === "wallet" ? (item.details.balance ?? "—") : item.amount}
 									</TableCell>
 									<TableCell>{item.currency}</TableCell>
 									<TableCell>

@@ -38,7 +38,7 @@ export const refundSchema = resourceSchema.extend({ kind: z.literal("refund") })
 export const walletSchema = resourceSchema.extend({
 	kind: z.literal("wallet"),
 	details: z.object({
-		balance: z.string(),
+		balance: z.string().nullable(),
 		address: z.string().optional(),
 		chain: z.enum(["ethereum", "solana"]).optional(),
 		custody: z.enum(["simulated", "provider"]).optional(),
@@ -122,7 +122,7 @@ export interface RefundInput {
 }
 
 export interface WalletInput {
-	currency: string;
+	currency?: string;
 	customer?: string;
 	provider?: WalletProvider;
 	chain?: "ethereum" | "solana";
@@ -165,6 +165,7 @@ type RequestBody =
 			requireHealthy: boolean;
 			safeFailover: boolean;
 	  }
+	| { status: "healthy" | "degraded" | "down"; estimatedFeeBps?: number | null }
 	| { status: "completed" | "failed" };
 
 interface InternalRequestOptions extends RequestOptions {
@@ -182,6 +183,20 @@ export const routingPolicySchema = z.object({
 });
 
 export type RoutingPolicy = z.infer<typeof routingPolicySchema>;
+
+export const providerHealthSchema = z.object({
+	provider: z.enum(["paystack", "flutterwave"]),
+	connected: z.boolean(),
+	status: z.enum(["unknown", "healthy", "degraded", "down"]),
+	successRate: z.string().nullable(),
+	settledCount: z.number(),
+	p95LatencyMs: z.number().nullable(),
+	latencyCount: z.number(),
+	estimatedFeeBps: z.number().nullable(),
+	updatedAt: z.string().nullable(),
+});
+
+export type ProviderHealth = z.infer<typeof providerHealthSchema>;
 
 export const reconciliationRunSchema = z.object({
 	id: z.uuid(),
@@ -417,6 +432,22 @@ export class OurPocket {
 			>,
 			options?: RequestOptions,
 		) => this.request("/routing-policy", routingPolicySchema, options, input, "POST"),
+	};
+	readonly providerHealth = {
+		list: (options?: RequestOptions) =>
+			this.request("/provider-health", z.array(providerHealthSchema), options),
+		update: (
+			provider: Provider,
+			input: { status: "healthy" | "degraded" | "down"; estimatedFeeBps?: number | null },
+			options?: RequestOptions,
+		) =>
+			this.request(
+				`/provider-health/${encodeURIComponent(provider)}`,
+				z.unknown(),
+				options,
+				input,
+				"POST",
+			),
 	};
 	readonly reconciliation = {
 		list: (options?: RequestOptions) =>
