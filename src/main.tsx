@@ -1,4 +1,5 @@
 import { RouterProvider, createRouter } from "@tanstack/react-router";
+import "@fontsource-variable/inter";
 import { StrictMode, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 
@@ -41,6 +42,7 @@ function App() {
 }
 
 const rootElement = document.getElementById("app");
+
 if (rootElement && !rootElement.innerHTML) {
 	const root = ReactDOM.createRoot(rootElement);
 	root.render(<App />);

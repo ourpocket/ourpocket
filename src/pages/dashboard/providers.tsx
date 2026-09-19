@@ -12,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Typography } from "@/components/ui/typography";
 import { useCurrentProject } from "@/hooks/use-current-project";
 import { ApiError } from "@/services/api-client";
 import {
@@ -356,69 +357,57 @@ function WalletProvidersContent() {
 	}
 
 	return (
-		<div className="space-y-8">
-			<div className="flex flex-col gap-4 border-b border-white/10 pb-6 lg:flex-row lg:items-end lg:justify-between">
-				<div>
-					<h2 className="text-xl font-semibold text-white">
-						{activeView === "catalog" ? "Connect a provider" : "Connected providers"}
-					</h2>
-					<p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
-						{activeView === "catalog" ? (
-							<>
-								Add a provider account to{" "}
-								<span className="font-medium text-zinc-200">{project.name}</span> so your project
-								can use it through the OurPocket API.
-							</>
-						) : (
-							<>
-								Review and update provider accounts connected to{" "}
-								<span className="font-medium text-zinc-200">{project.name}</span>.
-							</>
-						)}
-					</p>
+		<div className="space-y-6">
+			<div
+				className="flex flex-col gap-3 rounded-xl border border-white/[0.08] bg-[#1b1b1b] p-3 sm:flex-row sm:items-center sm:justify-between"
+				role="tablist"
+				aria-label="Provider views"
+			>
+				<div className="flex w-full rounded-lg bg-black/20 p-1 sm:w-auto">
+					<Button
+						type="button"
+						role="tab"
+						aria-selected={activeView === "catalog"}
+						variant="ghost"
+						className={
+							activeView === "catalog"
+								? "flex-1 !bg-white/[0.08] text-white sm:flex-none"
+								: "flex-1 !bg-transparent text-white/45 hover:!bg-white/[0.04] hover:text-white sm:flex-none"
+						}
+						onClick={() => setActiveView("catalog")}
+					>
+						Catalog
+					</Button>
+					<Button
+						type="button"
+						role="tab"
+						aria-selected={activeView === "connected"}
+						variant="ghost"
+						className={
+							activeView === "connected"
+								? "flex-1 !bg-white/[0.08] text-white sm:flex-none"
+								: "flex-1 !bg-transparent text-white/45 hover:!bg-white/[0.04] hover:text-white sm:flex-none"
+						}
+						onClick={() => setActiveView("connected")}
+					>
+						Connected
+						<span className="ml-1 text-xs text-white/40">{projectProviders.length}</span>
+					</Button>
 				</div>
 				{activeView === "catalog" && (
-					<div className="relative w-full lg:max-w-sm">
+					<div className="relative w-full sm:max-w-xs">
 						<Search
-							className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-zinc-500"
+							className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-white/35"
 							aria-hidden="true"
 						/>
 						<Input
 							value={search}
 							onChange={(event) => setSearch(event.target.value)}
 							placeholder="Search providers"
-							className="pl-9"
+							className="h-9 border-white/[0.08] bg-black/15 pl-9"
 						/>
 					</div>
 				)}
-			</div>
-
-			<div
-				className="flex flex-wrap gap-2 border-b border-white/10 pb-4"
-				role="tablist"
-				aria-label="Provider views"
-			>
-				<Button
-					type="button"
-					role="tab"
-					aria-selected={activeView === "catalog"}
-					variant={activeView === "catalog" ? "default" : "outline"}
-					onClick={() => setActiveView("catalog")}
-				>
-					Catalog
-				</Button>
-				<Button
-					type="button"
-					role="tab"
-					aria-selected={activeView === "connected"}
-					variant={activeView === "connected" ? "default" : "outline"}
-					onClick={() => setActiveView("connected")}
-				>
-					Connected
-					{projectProviders.length > 0 && (
-						<span className="ml-1 text-xs">{projectProviders.length}</span>
-					)}
-				</Button>
 			</div>
 
 			{errorMessage ? (
@@ -439,25 +428,27 @@ function WalletProvidersContent() {
 				</div>
 			) : activeView === "connected" ? (
 				projectProviders.length === 0 ? (
-					<div className="rounded-xl border border-dashed border-white/15 px-6 py-12 text-center">
+					<div className="rounded-xl border border-dashed border-white/[0.12] bg-white/[0.015] px-6 py-14 text-center">
 						<Link2 className="mx-auto size-6 text-zinc-500" aria-hidden="true" />
-						<h3 className="mt-4 font-semibold text-white">No providers connected yet</h3>
-						<p className="mx-auto mt-2 max-w-md text-sm leading-6 text-zinc-400">
+						<Typography variant="heading" className="mt-4">
+							No providers connected yet
+						</Typography>
+						<Typography className="mx-auto mt-2 max-w-md">
 							Browse the catalog to connect the provider account this project will use.
-						</p>
+						</Typography>
 						<Button type="button" className="mt-5" onClick={() => setActiveView("catalog")}>
 							Browse catalog
 						</Button>
 					</div>
 				) : (
-					<div className="divide-y divide-white/10 overflow-hidden rounded-xl border border-white/10 bg-card/70">
+					<div className="divide-y divide-white/[0.07] overflow-hidden rounded-xl border border-white/[0.08] bg-[#1b1b1b]">
 						{projectProviders.map((connection) => {
 							const isCatalogConnection = Boolean(connection.provider);
 
 							return (
 								<article
 									key={connection.id}
-									className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between"
+									className="flex flex-col gap-5 p-5 transition-colors hover:bg-white/[0.015] sm:flex-row sm:items-center sm:justify-between"
 								>
 									<div className="flex min-w-0 items-start gap-4">
 										<img
@@ -469,12 +460,14 @@ function WalletProvidersContent() {
 											}}
 										/>
 										<div className="min-w-0">
-											<h3 className="font-semibold text-white">{getConnectionName(connection)}</h3>
-											<p className="mt-1 text-sm text-zinc-400">
+											<Typography variant="subheading">{getConnectionName(connection)}</Typography>
+											<Typography variant="bodySmall" className="mt-1">
 												{formatConnectionDate(connection.createdAt)}
-											</p>
+											</Typography>
 											{!isCatalogConnection && (
-												<p className="mt-1 text-xs text-zinc-500">Legacy project connection</p>
+												<Typography variant="caption" className="mt-1">
+													Legacy project connection
+												</Typography>
 											)}
 										</div>
 									</div>
@@ -517,7 +510,12 @@ function WalletProvidersContent() {
 					<div className="flex flex-wrap gap-2" aria-label="Provider categories">
 						<Button
 							type="button"
-							variant={selectedCategory === "all" ? "default" : "outline"}
+							variant={selectedCategory === "all" ? "default" : "ghost"}
+							className={
+								selectedCategory === "all"
+									? "h-8"
+									: "h-8 border border-white/[0.08] !bg-transparent text-white/45 hover:!bg-white/[0.04] hover:text-white"
+							}
 							onClick={() => setSelectedCategory("all")}
 						>
 							All providers
@@ -526,14 +524,19 @@ function WalletProvidersContent() {
 							<Button
 								key={category}
 								type="button"
-								variant={selectedCategory === category ? "default" : "outline"}
+								variant={selectedCategory === category ? "default" : "ghost"}
+								className={
+									selectedCategory === category
+										? "h-8"
+										: "h-8 border border-white/[0.08] !bg-transparent text-white/45 hover:!bg-white/[0.04] hover:text-white"
+								}
 								onClick={() => setSelectedCategory(category)}
 							>
 								{categoryLabels[category]}
 							</Button>
 						))}
 					</div>
-					<div className="space-y-10">
+					<div className="space-y-8">
 						{groupedCatalog.map(({ category, providers }) => {
 							if (providers.length === 0) {
 								return null;
@@ -542,13 +545,18 @@ function WalletProvidersContent() {
 							return (
 								<section
 									key={category}
-									className="space-y-4"
+									className="space-y-3"
 									aria-labelledby={`category-${category}`}
 								>
-									<h3 id={`category-${category}`} className="text-base font-semibold text-white">
+									<Typography
+										as="h3"
+										variant="label"
+										id={`category-${category}`}
+										className="uppercase tracking-[0.08em] text-white/45"
+									>
 										{categoryLabels[category]}
-									</h3>
-									<div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+									</Typography>
+									<div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
 										{providers.map((provider) => {
 											const isConnected = connectedProviderIds.has(provider.id);
 											const canConnect = provider.status === ProviderCatalogStatus.ACTIVE;
@@ -556,13 +564,13 @@ function WalletProvidersContent() {
 											return (
 												<article
 													key={provider.id}
-													className="flex min-h-64 flex-col rounded-xl border border-white/10 bg-card/70 p-5"
+													className="group flex min-h-56 flex-col rounded-xl border border-white/[0.08] bg-[#1b1b1b] p-5 transition-colors hover:border-white/[0.14] hover:bg-[#1d1d1d]"
 												>
 													<div className="flex items-start justify-between gap-4">
 														<img
 															src={provider.logoAsset}
 															alt=""
-															className="size-9 rounded-md object-contain"
+															className="size-11 rounded-lg border border-white/[0.07] bg-white/[0.025] p-2 object-contain"
 															onError={(event) => {
 																event.currentTarget.src = "/img/provider-placeholder.svg";
 															}}
@@ -571,17 +579,21 @@ function WalletProvidersContent() {
 															{catalogStatusLabels[provider.status]}
 														</Badge>
 													</div>
-													<div className="mt-5">
-														<h4 className="font-semibold text-white">{provider.name}</h4>
-														<p className="mt-2 text-sm leading-6 text-zinc-400">
+													<div className="mt-4">
+														<Typography variant="heading">{provider.name}</Typography>
+														<Typography className="mt-1.5 line-clamp-2">
 															{provider.description}
-														</p>
+														</Typography>
 													</div>
-													<div className="mt-4 flex flex-wrap gap-2">
+													<div className="mt-4 flex flex-wrap gap-1.5">
 														{provider.capabilities.map((capability) => (
-															<span key={capability} className="text-xs text-zinc-500">
+															<Typography
+																key={capability}
+																variant="caption"
+																className="rounded-md border border-white/[0.07] bg-white/[0.025] px-2 py-1 text-white/45"
+															>
 																{capabilityLabels[capability]}
-															</span>
+															</Typography>
 														))}
 													</div>
 													<div className="mt-auto pt-5">
@@ -628,8 +640,8 @@ function WalletProvidersContent() {
 						})}
 
 						{filteredCatalog.length === 0 && (
-							<div className="rounded-xl border border-dashed border-white/15 p-10 text-center text-sm text-zinc-400">
-								No providers match your search.
+							<div className="rounded-xl border border-dashed border-white/[0.12] bg-white/[0.015] p-12 text-center">
+								<Typography>No providers match your search.</Typography>
 							</div>
 						)}
 					</div>

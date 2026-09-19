@@ -226,7 +226,7 @@ const DashboardLayout = ({ children, title, description, actionTab }: Props) => 
 
 				<main className="w-0 min-w-0 flex-1">
 					<DashboardHeader />
-					<div className="min-w-0 flex-1 overflow-y-auto px-4 py-7 sm:px-8 sm:py-9 lg:px-10">
+					<div className="min-w-0 flex-1 overflow-y-auto px-5 py-8 sm:px-10 sm:py-10 lg:px-12 xl:px-14">
 						<div className="mx-auto w-full min-w-0 max-w-[1440px]">
 							<PageInfo title={title} description={description} actionTab={actionTab} />
 							{renderMainContent()}

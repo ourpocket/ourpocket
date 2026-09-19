@@ -24,6 +24,7 @@
   "dependencies": {
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
+    "@fontsource-variable/inter": "^5.2.8",
     "@gsap/react": "^2.1.2",
     "@hookform/resolvers": "^5.2.1",
     "@ourpocket/sdk": "workspace:*",

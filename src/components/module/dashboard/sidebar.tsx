@@ -130,10 +130,10 @@ const SidebarItemComponent = ({ item }: { item: SidebarItem }) => {
 const sidebarStyles = {
 	toggleButton: "fixed left-4 top-4 z-50 lg:hidden",
 	aside:
-		"fixed inset-y-0 left-0 z-40 flex w-60 flex-col border-r border-white/[0.07] bg-[#151515] transition-transform duration-200 ease-in-out lg:static",
-	header: "flex h-16 items-center justify-between border-b border-white/[0.07] px-5",
+		"fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-white/[0.07] bg-[#151515] transition-transform duration-200 ease-in-out lg:static",
+	header: "flex h-16 items-center justify-between border-b border-white/[0.07] px-6",
 	content: "flex flex-1 flex-col",
-	sections: "flex-1 space-y-5 overflow-y-auto p-3",
+	sections: "flex-1 space-y-5 overflow-y-auto p-4",
 };
 
 const DashboardSidebar = ({
